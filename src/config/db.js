@@ -1,24 +1,40 @@
 import mongoose from 'mongoose';
 
-let isConnected = false;
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 export const connectDB = async () => {
-  if (isConnected || mongoose.connection.readyState >= 1) {
-    return;
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  if (!process.env.MONGO_URI) {
-    console.error('MONGO_URI environment variable is missing.');
-    return;
+  if (!cached.promise) {
+    const mongoUri = process.env.MONGO_URI;
+    if (!mongoUri) {
+      console.error('MONGO_URI environment variable is missing.');
+      return;
+    }
+
+    const opts = {
+      serverSelectionTimeoutMS: 5000,
+    };
+
+    cached.promise = mongoose.connect(mongoUri, opts).then((mongooseInstance) => {
+      console.log(`MongoDB Connected: ${mongooseInstance.connection.host}`);
+      return mongooseInstance;
+    });
   }
 
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    isConnected = !!conn.connections[0].readyState;
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`MongoDB Connection Error: ${error.message}`);
-    // DO NOT process.exit(1) in serverless environments
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error(`MongoDB Connection Error: ${e.message}`);
+    throw e;
   }
-};
 
+  return cached.conn;
+};
