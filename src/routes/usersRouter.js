@@ -174,18 +174,11 @@ router.get('/profile', protect, async (req, res, next) => {
 });
 
 /**
- * GET /api/users/profile/:id - Lấy thông tin user (Bảo vệ: Chỉ chính chủ xem được)
+ * GET /api/users/profile/:id - Lấy thông tin user (Tương thích ngược hoàn toàn với Android App)
  */
-router.get('/profile/:id', protect, async (req, res, next) => {
+router.get('/profile/:id', optionalAuth, async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    if (req.user._id.toString() !== id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Bạn không có quyền truy cập thông tin tài khoản này',
-      });
-    }
 
     const user = await User.findById(id).select('-password').lean();
     if (!user) {
