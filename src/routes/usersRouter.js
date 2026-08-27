@@ -143,6 +143,7 @@ router.get('/profile/:id', async (req, res) => {
         avatar: user.avatar,
         phone: user.phone,
         balance: user.balance ?? 0,
+        token: generateToken(user._id),
       },
     });
   } catch (error) {
@@ -165,12 +166,13 @@ router.post('/reward', async (req, res) => {
       });
     }
 
-    const amount = typeof rewardAmount === 'number' && rewardAmount > 0 ? rewardAmount : 0.5; // Mặc định +$0.50
+    const amount = typeof rewardAmount === 'number' && rewardAmount > 0 ? rewardAmount : 0.5;
 
+    // Sử dụng returnDocument: 'after' thay cho deprecated { new: true }
     const user = await User.findByIdAndUpdate(
       userId,
       { $inc: { balance: amount } },
-      { new: true }
+      { returnDocument: 'after' }
     ).select('-password');
 
     if (!user) {
@@ -190,6 +192,7 @@ router.post('/reward', async (req, res) => {
         avatar: user.avatar,
         phone: user.phone,
         balance: user.balance ?? 0,
+        token: generateToken(user._id),
       },
     });
   } catch (error) {
