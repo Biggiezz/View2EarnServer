@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    balance: {
+      type: Number,
+      default: 0,
+      min: [0, 'Số dư không thể âm'],
+    },
   },
   {
     timestamps: true,

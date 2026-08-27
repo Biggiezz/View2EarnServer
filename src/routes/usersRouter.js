@@ -61,6 +61,7 @@ router.post('/register', async (req, res) => {
         email: user.email,
         avatar: user.avatar,
         phone: user.phone,
+        balance: user.balance ?? 0,
         token: generateToken(user._id),
       },
     });
@@ -115,6 +116,7 @@ router.post('/login', async (req, res) => {
         email: user.email,
         avatar: user.avatar,
         phone: user.phone,
+        balance: user.balance ?? 0,
         token: generateToken(user._id),
       },
     });
