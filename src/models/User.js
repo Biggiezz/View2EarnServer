@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       minlength: [3, 'Username phải có ít nhất 3 ký tự'],
+      index: true,
     },
     password: {
       type: String,
@@ -24,6 +25,7 @@ const userSchema = new mongoose.Schema(
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Email không hợp lệ',
       ],
+      index: true,
     },
     avatar: {
       type: String,
@@ -39,6 +41,21 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Số dư không thể âm'],
     },
+    totalEarned: {
+      type: Number,
+      default: 0,
+      min: [0, 'Tổng thu nhập không thể âm'],
+    },
+    status: {
+      type: String,
+      enum: ['active', 'suspended', 'banned'],
+      default: 'active',
+      index: true,
+    },
+    lastRewardAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -48,3 +65,4 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.model('User', userSchema);
 
 export default User;
+
