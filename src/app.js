@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectDB, disconnectDB } from './config/db.js';
 import routes from './routes/index.js';
@@ -13,6 +14,14 @@ import { generalLimiter } from './middlewares/rateLimiter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const getHTMLFilePath = (filename) => {
+  const p1 = path.join(__dirname, 'views', filename);
+  if (fs.existsSync(p1)) return p1;
+  const p2 = path.join(process.cwd(), 'src', 'views', filename);
+  if (fs.existsSync(p2)) return p2;
+  return path.join(process.cwd(), 'views', filename);
+};
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -34,12 +43,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Trang chủ & Privacy Policy (Phục vụ tĩnh nhanh chóng không cần DB)
 app.get(['/', '/privacy-policy', '/privacy'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'privacy.html'));
+  res.sendFile(getHTMLFilePath('privacy.html'));
 });
 
 // Trang Quản trị Admin Dashboard
 app.get(['/admin', '/admin/*'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'admin.html'));
+  res.sendFile(getHTMLFilePath('admin.html'));
 });
 
 // Middleware kết nối DB trước khi xử lý API (cực kỳ quan trọng cho Vercel Serverless & High Concurrency)
