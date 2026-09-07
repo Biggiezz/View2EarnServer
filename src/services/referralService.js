@@ -59,19 +59,45 @@ export const claimReferralCode = async ({ referredUserId, referralCode }) => {
     throw err;
   }
 
-  // 4. Tạo bản ghi Referral trong DB
+  // 4. Tạo bản ghi Referral trong DB và thưởng +$1.00 trực tiếp
+  const now = new Date();
+  const rewardAmount = REFERRAL_REWARD_AMOUNT;
+
   const referral = await Referral.create({
     referrerId: referrer._id,
     referredUserId,
     referralCode: cleanCode,
-    status: 'REGISTERED',
-    requiredAds: REQUIRED_ADS_COUNT,
+    status: 'REWARDED',
+    requiredAds: 0,
     completedAds: 0,
-    rewardAmount: REFERRAL_REWARD_AMOUNT,
+    rewardAmount,
+    qualifiedAt: now,
+    rewardedAt: now,
   });
 
   // 5. Cập nhật thông tin referredBy trên User
   await User.findByIdAndUpdate(referredUserId, { referredBy: referrer._id });
+
+  // 6. Cộng +$1.00 TRỰC TIẾP vào tài khoản người giới thiệu
+  await User.findByIdAndUpdate(referrer._id, {
+    $inc: { balance: rewardAmount, totalEarned: rewardAmount },
+    $set: { lastRewardAt: now },
+  });
+
+  // 7. Ghi nhận giao dịch thưởng Mời bạn bè
+  const transaction = await RewardTransaction.create({
+    userId: referrer._id,
+    amount: rewardAmount,
+    type: 'REFERRAL_REWARD',
+    status: 'COMPLETED',
+    metadata: {
+      note: `Thưởng mời bạn bè +$1.00 từ người dùng ID ${referredUserId}`,
+      referralId: referral._id,
+    },
+  });
+
+  referral.rewardTransactionId = transaction._id;
+  await referral.save();
 
   return referral;
 };
