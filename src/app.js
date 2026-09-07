@@ -60,7 +60,7 @@ app.get(['/', '/privacy-policy', '/privacy'], (req, res) => {
 });
 
 // Trang Quản trị Admin Dashboard
-app.get(['/admin', '/admin/*'], (req, res) => {
+app.get(['/admin', '/admin/{*path}'], (req, res) => {
   const html = loadHTMLView('admin.html');
   if (html) return res.type('html').send(html);
   res.status(404).send('Admin Dashboard Page Not Found');
