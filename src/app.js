@@ -15,12 +15,23 @@ import { generalLimiter } from './middlewares/rateLimiter.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const getHTMLFilePath = (filename) => {
-  const p1 = path.join(__dirname, 'views', filename);
-  if (fs.existsSync(p1)) return p1;
-  const p2 = path.join(process.cwd(), 'src', 'views', filename);
-  if (fs.existsSync(p2)) return p2;
-  return path.join(process.cwd(), 'views', filename);
+const loadHTMLView = (filename) => {
+  const possiblePaths = [
+    path.join(__dirname, 'views', filename),
+    path.join(process.cwd(), 'src', 'views', filename),
+    path.join(process.cwd(), 'views', filename),
+  ];
+
+  for (const p of possiblePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p, 'utf8');
+      }
+    } catch (e) {
+      // Continue checking next path
+    }
+  }
+  return null;
 };
 
 const app = express();
@@ -43,12 +54,16 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Trang chủ & Privacy Policy (Phục vụ tĩnh nhanh chóng không cần DB)
 app.get(['/', '/privacy-policy', '/privacy'], (req, res) => {
-  res.sendFile(getHTMLFilePath('privacy.html'));
+  const html = loadHTMLView('privacy.html');
+  if (html) return res.type('html').send(html);
+  res.status(404).send('Privacy Policy Page Not Found');
 });
 
 // Trang Quản trị Admin Dashboard
 app.get(['/admin', '/admin/*'], (req, res) => {
-  res.sendFile(getHTMLFilePath('admin.html'));
+  const html = loadHTMLView('admin.html');
+  if (html) return res.type('html').send(html);
+  res.status(404).send('Admin Dashboard Page Not Found');
 });
 
 // Middleware kết nối DB trước khi xử lý API (cực kỳ quan trọng cho Vercel Serverless & High Concurrency)
