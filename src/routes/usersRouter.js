@@ -10,7 +10,7 @@ import { generateUniqueReferralCode, claimReferralCode, checkAndQualifyReferral 
 const router = Router();
 
 // Server-controlled default reward
-const DEFAULT_REWARD_AMOUNT = parseFloat(process.env.DEFAULT_AD_REWARD || '0.001');
+const DEFAULT_REWARD_AMOUNT = parseFloat(process.env.DEFAULT_AD_REWARD || '0.50');
 const MAX_ALLOWED_REWARD = 1.00;
 
 // Helper: Tạo JWT Token
@@ -172,6 +172,12 @@ router.get('/profile', protect, async (req, res, next) => {
       });
     }
 
+    const adsWatched = await RewardTransaction.countDocuments({
+      userId: user._id,
+      type: 'AD_REWARD',
+      status: 'COMPLETED',
+    });
+
     res.status(200).json({
       success: true,
       message: 'Lấy thông tin thành công',
@@ -183,6 +189,7 @@ router.get('/profile', protect, async (req, res, next) => {
         phone: user.phone,
         balance: user.balance ?? 0,
         totalEarned: user.totalEarned ?? 0,
+        adsWatched: adsWatched ?? 0,
       },
     });
   } catch (error) {
@@ -205,6 +212,12 @@ router.get('/profile/:id', optionalAuth, async (req, res, next) => {
       });
     }
 
+    const adsWatched = await RewardTransaction.countDocuments({
+      userId: user._id,
+      type: 'AD_REWARD',
+      status: 'COMPLETED',
+    });
+
     res.status(200).json({
       success: true,
       message: 'Lấy thông tin thành công',
@@ -216,6 +229,7 @@ router.get('/profile/:id', optionalAuth, async (req, res, next) => {
         phone: user.phone,
         balance: user.balance ?? 0,
         totalEarned: user.totalEarned ?? 0,
+        adsWatched: adsWatched ?? 0,
         token: generateToken(user._id),
       },
     });
@@ -305,7 +319,7 @@ router.post('/reward', optionalAuth, rewardLimiter, async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(3)} từ việc xem quảng cáo!`,
+      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(2)} từ việc xem quảng cáo!`,
       data: {
         _id: updatedUser._id,
         username: updatedUser.username,

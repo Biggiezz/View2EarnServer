@@ -273,8 +273,8 @@ async function runReferralTestSuite() {
     });
     const userAAfterFraud = await User.findById(userA.id).lean();
     // Trước đó User A có $2.00. Nhận ad reward $0.50 -> Kỳ vọng $2.50
-    console.log(`  - Số dư User A sau khi thử gian lận: $${userAAfterFraud.balance.toFixed(3)} (Kỳ vọng: Đúng $2.001)`);
-    if (Math.abs(userAAfterFraud.balance - 2.001) < 0.0001) {
+    console.log(`  - Số dư User A sau khi thử gian lận: $${userAAfterFraud.balance.toFixed(2)} (Kỳ vọng: Đúng $2.50)`);
+    if (userAAfterFraud.balance === 2.50) {
       console.log('✅ PASS [TEST 8]: Server bỏ qua rewardAmount gian lận từ client.\n');
     } else {
       throw new Error(`❌ FAIL [TEST 8]: Client sửa được số tiền thưởng! Balance = ${userAAfterFraud.balance}`);

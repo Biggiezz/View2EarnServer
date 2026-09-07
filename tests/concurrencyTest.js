@@ -97,9 +97,9 @@ async function runTestSuite() {
 
     // Kiểm tra số dư trong DB
     const freshUser = await User.findById(userId).lean();
-    console.log(`  - Số dư thực tế trong DB: $${freshUser.balance.toFixed(3)} (Kỳ vọng: Đúng $0.001)`);
+    console.log(`  - Số dư thực tế trong DB: $${freshUser.balance.toFixed(2)} (Kỳ vọng: Đúng $0.50)`);
 
-    if (successRequests.length === 1 && Math.abs(freshUser.balance - 0.001) < 0.0001) {
+    if (successRequests.length === 1 && freshUser.balance === 0.50) {
       console.log('✅ PASS: Idempotency hoạt động tuyệt đối! Không bị nhân bản tiền thưởng (Duplicate Reward prevented).\n');
     } else {
       throw new Error(`❌ FAIL: Race condition thất bại! Success count = ${successRequests.length}, Balance = ${freshUser.balance}`);
@@ -125,9 +125,9 @@ async function runTestSuite() {
     const fraudData = await fraudRes.json();
     const userAfterFraud = await User.findById(userId).lean();
 
-    console.log(`  - Số dư sau khi nhận thưởng: $${userAfterFraud.balance.toFixed(3)} (Kỳ vọng: $0.002 = $0.001 + $0.001)`);
-    if (Math.abs(userAfterFraud.balance - 0.002) < 0.0001) {
-      console.log('✅ PASS: Server Authority thành công! Server bỏ qua số tiền do client gửi lên và chỉ cộng mức $0.001 hợp lệ.\n');
+    console.log(`  - Số dư sau khi nhận thưởng: $${userAfterFraud.balance.toFixed(2)} (Kỳ vọng: $1.00 = $0.50 + $0.50)`);
+    if (userAfterFraud.balance === 1.00) {
+      console.log('✅ PASS: Server Authority thành công! Server bỏ qua số tiền do client gửi lên và chỉ cộng mức $0.50 hợp lệ.\n');
     } else {
       throw new Error(`❌ FAIL: Server bị thao túng số tiền thưởng! Balance = ${userAfterFraud.balance}`);
     }
