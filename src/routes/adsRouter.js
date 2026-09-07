@@ -6,6 +6,7 @@ import RewardTransaction from "../models/RewardTransaction.js";
 import User from "../models/User.js";
 import { protect } from "../middlewares/auth.js";
 import { rewardLimiter } from "../middlewares/rateLimiter.js";
+import { checkAndQualifyReferral } from "../services/referralService.js";
 
 const router = Router();
 
@@ -157,6 +158,9 @@ router.post("/complete", protect, rewardLimiter, async (req, res, next) => {
         message: "Không tìm thấy tài khoản người dùng",
       });
     }
+
+    // Tự động kiểm tra tiến trình hoàn thành referral của người dùng
+    await checkAndQualifyReferral(userId);
 
     res.status(200).json({
       success: true,

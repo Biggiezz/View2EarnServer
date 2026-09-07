@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import RewardTransaction from '../models/RewardTransaction.js';
 import { protect, optionalAuth } from '../middlewares/auth.js';
 import { authLimiter, rewardLimiter } from '../middlewares/rateLimiter.js';
+import { generateUniqueReferralCode, claimReferralCode, checkAndQualifyReferral } from '../services/referralService.js';
 
 const router = Router();
 
@@ -52,6 +53,8 @@ router.post('/register', authLimiter, async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const generatedReferralCode = await generateUniqueReferralCode();
+
     const user = await User.create({
       username: trimmedUsername,
       password: hashedPassword,
@@ -61,7 +64,20 @@ router.post('/register', authLimiter, async (req, res, next) => {
       balance: 0,
       totalEarned: 0,
       status: 'active',
+      referralCode: generatedReferralCode,
     });
+
+    // Nếu client gửi kèm referralCode khi đăng ký, tiến hành liên kết người giới thiệu
+    if (req.body.referralCode && typeof req.body.referralCode === 'string') {
+      try {
+        await claimReferralCode({
+          referredUserId: user._id,
+          referralCode: req.body.referralCode,
+        });
+      } catch (refErr) {
+        console.warn(`[Register] Failed to claim referral code "${req.body.referralCode}":`, refErr.message);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -74,6 +90,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
         phone: user.phone,
         balance: user.balance ?? 0,
         totalEarned: user.totalEarned ?? 0,
+        referralCode: user.referralCode,
         token: generateToken(user._id),
       },
     });
@@ -282,6 +299,9 @@ router.post('/reward', optionalAuth, rewardLimiter, async (req, res, next) => {
         },
       });
     }
+
+    // Tự động kiểm tra và nâng cấp phần thưởng Referral (nếu người dùng đang được giới thiệu)
+    await checkAndQualifyReferral(targetUserId);
 
     res.status(200).json({
       success: true,
