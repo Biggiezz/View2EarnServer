@@ -46,6 +46,16 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Tổng thu nhập không thể âm'],
     },
+    adsWatched: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
     status: {
       type: String,
       enum: ['active', 'suspended', 'banned'],

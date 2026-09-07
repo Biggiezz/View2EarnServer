@@ -2,6 +2,7 @@ import { Router } from 'express';
 import usersRouter from './usersRouter.js';
 import adsRouter from './adsRouter.js';
 import referralRouter from './referralRouter.js';
+import adminRouter from './adminRouter.js';
 
 const router = Router();
 
@@ -23,6 +24,9 @@ router.use('/ads', adsRouter);
 
 // Referral routes (/api/referral/me, /api/referral/claim, /api/referral/stats)
 router.use('/referral', referralRouter);
+
+// Admin routes (/api/admin/stats, /api/admin/users, /api/admin/transactions)
+router.use('/admin', adminRouter);
 
 export default router;
 

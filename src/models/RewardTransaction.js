@@ -15,7 +15,7 @@ const rewardTransactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['AD_REWARD', 'DAILY_BONUS', 'REFERRAL_REWARD', 'PROMO_CODE', 'ADMIN_ADJUSTMENT'],
+      enum: ['AD_REWARD', 'DAILY_BONUS', 'REFERRAL_REWARD', 'PROMO_CODE', 'ADMIN_ADJUSTMENT', 'WITHDRAWAL'],
       default: 'AD_REWARD',
       index: true,
     },
@@ -29,7 +29,7 @@ const rewardTransactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['COMPLETED', 'FAILED', 'REVERSED'],
+      enum: ['COMPLETED', 'PENDING', 'REJECTED', 'FAILED', 'REVERSED'],
       default: 'COMPLETED',
       index: true,
     },

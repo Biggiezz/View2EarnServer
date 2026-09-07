@@ -37,6 +37,11 @@ app.get(['/', '/privacy-policy', '/privacy'], (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'privacy.html'));
 });
 
+// Trang Quản trị Admin Dashboard
+app.get(['/admin', '/admin/*'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'admin.html'));
+});
+
 // Middleware kết nối DB trước khi xử lý API (cực kỳ quan trọng cho Vercel Serverless & High Concurrency)
 app.use('/api', async (req, res, next) => {
   try {

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View2Earn Admin Dashboard — Quản Trị Hệ Thống</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #F59E0B;
+      --primary-hover: #D97706;
+      --primary-light: #FEF3C7;
+      --dark-bg: #0F172A;
+      --dark-card: #1E293B;
+      --dark-border: #334155;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --bg-body: #F8FAFC;
+      --surface: #FFFFFF;
+      --border-color: #E2E8F0;
+      --success: #10B981;
+      --success-bg: #D1FAE5;
+      --danger: #EF4444;
+      --danger-bg: #FEE2E2;
+      --warning: #F59E0B;
+      --warning-bg: #FEF3C7;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 24px -4px rgba(0,0,0,0.12);
+      --radius: 12px;
+      --transition: all 0.2s ease-in-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 260px;
+      background-color: var(--dark-bg);
+      color: #FFFFFF;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px 24px 12px;
+      border-bottom: 1px solid var(--dark-border);
+      margin-bottom: 24px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style: none;
+    }
+
+    .nav-item button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: #94A3B8;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #F8FAFC;
+    }
+
+    .nav-item button.active {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--dark-border);
+      font-size: 12px;
+      color: #64748B;
+      text-align: center;
+    }
+
+    /* Main Area */
+    .main-wrapper {
+      margin-left: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .top-header {
+      background: var(--surface);
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--success-bg);
+      color: #065F46;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .btn-refresh {
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-refresh:hover {
+      background: var(--border-color);
+    }
+
+    /* Content Body */
+    .content-container {
+      padding: 32px;
+      flex: 1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stat Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .stat-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 12px 0 4px 0;
+    }
+
+    .stat-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Card Panels */
+    .panel-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-search, .select-filter {
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      background: var(--surface);
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .input-search:focus, .select-filter:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    /* Data Table */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .data-table th {
+      background: var(--bg-body);
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .data-table tbody tr {
+      transition: var(--transition);
+    }
+
+    .data-table tbody tr:hover {
+      background-color: #F1F5F9;
+    }
+
+    .user-avatar-chip {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .user-info-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .badge-active { background: var(--success-bg); color: #065F46; }
+    .badge-banned { background: var(--danger-bg); color: #991B1B; }
+    .badge-suspended { background: var(--warning-bg); color: #92400E; }
+    .badge-completed { background: var(--success-bg); color: #065F46; }
+    .badge-pending { background: var(--warning-bg); color: #92400E; }
+    .badge-rejected { background: var(--danger-bg); color: #991B1B; }
+
+    /* Action Buttons */
+    .btn-action {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-primary { background: var(--primary); color: #FFFFFF; }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: var(--border-color); }
+
+    .btn-danger { background: var(--danger); color: #FFFFFF; }
+    .btn-danger:hover { background: #DC2626; }
+
+    .btn-success { background: var(--success); color: #FFFFFF; }
+    .btn-success:hover { background: #059669; }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: var(--bg-body);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+    }
+
+    /* Grid Layouts for Overview */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        width: 80px;
+        padding: 16px 8px;
+      }
+      .brand-title, .brand-subtitle, .nav-item span {
+        display: none;
+      }
+      .main-wrapper {
+        margin-left: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">V</div>
+      <div>
+        <div class="brand-title">View2Earn</div>
+        <div class="brand-subtitle">Admin Portal</div>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <button class="active" onclick="switchTab('overview')">
+          <span>📊</span> <span>Tổng quan</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('users')">
+          <span>👥</span> <span>Người dùng</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('transactions')">
+          <span>💳</span> <span>Giao dịch & Rút tiền</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('settings')">
+          <span>⚙️</span> <span>Cấu hình Hệ thống</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      View2Earn Server v1.0.23
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Top Header Bar -->
+    <header class="top-header">
+      <div class="header-title" id="pageTitle">Tổng Quan Hệ Thống</div>
+      <div class="header-actions">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>System Online</span>
+        </div>
+        <button class="btn-refresh" onclick="refreshCurrentTab()">
+          <span>🔄</span> <span>Làm mới</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="content-container">
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-content active">
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Tổng người dùng</div>
+            <div class="stat-value" id="statTotalUsers">0</div>
+            <div class="stat-subtitle" id="statActiveUsers">0 đang hoạt động</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Tổng số dư hệ thống</div>
+            <div class="stat-value" id="statTotalBalance">$0.000</div>
+            <div class="stat-subtitle" id="statTotalEarned">Tổng thu nhập: $0.000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Lượt xem quảng cáo</div>
+            <div class="stat-value" id="statAdsWatched">0</div>
+            <div class="stat-subtitle">Đã xác nhận xem thành công</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Tổng lượt giới thiệu</div>
+            <div class="stat-value" id="statTotalReferrals">0</div>
+            <div class="stat-subtitle" id="statQualifiedReferrals">0 lượt đủ điều kiện</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Recent Registrations -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Người dùng mới đăng ký</div>
+              <button class="btn-action btn-outline" onclick="switchTab('users')">Xem tất cả</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Người dùng</th>
+                    <th>Email</th>
+                    <th>Số dư</th>
+                    <th>QC đã xem</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentUsers">
+                  <tr><td colspan="5" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Giao dịch gần nhất</div>
+              <button class="btn-action btn-outline" onclick="switchTab('transactions')">Xem tất cả</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Loại</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentTransactions">
+                  <tr><td colspan="4" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: USERS MANAGEMENT -->
+      <section id="tab-users" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Danh sách Người dùng</div>
+            <div class="filter-group">
+              <input type="text" id="userSearchInput" class="input-search" placeholder="Tìm theo tên, email, mã giới thiệu..." onkeyup="handleUserSearch(event)">
+              <select id="userStatusSelect" class="select-filter" onchange="loadUsersData()">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động (Active)</option>
+                <option value="banned">Tạm khóa (Banned)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Người dùng</th>
+                  <th>Email</th>
+                  <th>Số dư ví</th>
+                  <th>QC xem</th>
+                  <th>Mã Giới Thiệu</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tham gia</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableUsersList">
+                <tr><td colspan="8" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải danh sách người dùng...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: TRANSACTIONS & WITHDRAWALS -->
+      <section id="tab-transactions" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Lịch Sử Giao Dịch & Rút Tiền</div>
+            <div class="filter-group">
+              <select id="txTypeSelect" class="select-filter" onchange="loadTransactionsData()">
+                <option value="all">Tất cả loại giao dịch</option>
+                <option value="AD_REWARD">Thưởng xem QC</option>
+                <option value="REFERRAL_REWARD">Thưởng giới thiệu</option>
+                <option value="WITHDRAWAL">Rút tiền</option>
+                <option value="ADMIN_ADJUSTMENT">Admin điều chỉnh</option>
+              </select>
+              <select id="txStatusSelect" class="select-filter" onchange="loadTransactionsData()">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="COMPLETED">Hoàn tất (Completed)</option>
+                <option value="PENDING">Đang chờ (Pending)</option>
+                <option value="REJECTED">Từ chối (Rejected)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã GD</th>
+                  <th>Người dùng</th>
+                  <th>Loại giao dịch</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Thời gian</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableTransactionsList">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải danh sách giao dịch...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SYSTEM SETTINGS -->
+      <section id="tab-settings" class="tab-content">
+        <div class="panel-card" style="max-width:700px;">
+          <div class="panel-title" style="margin-bottom:20px;">Cấu Hình Hệ Thống View2Earn</div>
+          
+          <div class="form-group">
+            <label>Phần thưởng 1 lượt xem Quảng cáo hợp lệ</label>
+            <input type="text" class="form-control" value="$0.001 USD" readonly style="background:#F1F5F9;">
+          </div>
+          
+          <div class="form-group">
+            <label>Phần thưởng khi người dùng mời bạn bè hợp lệ</label>
+            <input type="text" class="form-control" value="$1.000 USD (Cộng trực tiếp vào ví người mời)" readonly style="background:#F1F5F9;">
+          </div>
+
+          <div class="form-group">
+            <label>Giới hạn xem quảng cáo & rút tiền hàng ngày</label>
+            <input type="text" class="form-control" value="$10.000 USD / ngày" readonly style="background:#F1F5F9;">
+          </div>
+
+          <div class="form-group">
+            <label>Trạng thái kết nối MongoDB Backend</label>
+            <input type="text" class="form-control" value="🟢 Đã kết nối MongoDB Atlas thành công" readonly style="background:#F1F5F9; color:#065F46; font-weight:600;">
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: User Details & Balance Adjustment -->
+  <div class="modal-overlay" id="userModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="modalUsername">Chi tiết Người dùng</div>
+        <button class="modal-close" onclick="closeUserModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="modalInputUsername" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="text" id="modalInputEmail" class="form-control" readonly>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số dư ví hiện tại ($)</label>
+            <input type="text" id="modalInputBalance" class="form-control" readonly style="font-weight:700; color:var(--primary);">
+          </div>
+          <div class="form-group">
+            <label>Tổng thu nhập đã kiếm được ($)</label>
+            <input type="text" id="modalInputTotalEarned" class="form-control" readonly>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số quảng cáo đã xem</label>
+            <input type="text" id="modalInputAdsWatched" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Mã giới thiệu của user</label>
+            <input type="text" id="modalInputReferralCode" class="form-control" readonly>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+        <div class="panel-title" style="font-size:15px; margin-bottom:12px;">Cộng / Trừ Số Dư Ví Người Dùng</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số tiền điều chỉnh (VD: +0.500 hoặc -0.100)</label>
+            <input type="number" step="0.001" id="inputAdjustAmount" class="form-control" placeholder="Nhập số tiền...">
+          </div>
+          <div class="form-group">
+            <label>Ghi chú điều chỉnh</label>
+            <input type="text" id="inputAdjustNote" class="form-control" placeholder="Lý do điều chỉnh...">
+          </div>
+        </div>
+        <button class="btn-action btn-primary" onclick="submitBalanceAdjustment()">Thực hiện điều chỉnh số dư</button>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+        <div class="panel-title" style="font-size:15px; margin-bottom:12px;">Trạng Thái Tài Khoản</div>
+        <div style="display:flex; gap:12px;">
+          <button class="btn-action btn-success" onclick="updateUserAccountStatus('active')">Mở khóa / Hoạt động</button>
+          <button class="btn-action btn-danger" onclick="updateUserAccountStatus('banned')">Tạm khóa Tài khoản (Ban)</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action btn-outline" onclick="closeUserModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'overview';
+    let selectedUserId = null;
+    let searchTimeout = null;
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      const currentBtn = Array.from(document.querySelectorAll('.nav-item button')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (currentBtn) currentBtn.classList.add('active');
+
+      const targetContent = document.getElementById(`tab-${tabId}`);
+      if (targetContent) targetContent.classList.add('active');
+
+      const titles = {
+        overview: 'Tổng Quan Hệ Thống',
+        users: 'Quản Lý Người Dùng',
+        transactions: 'Lịch Sử Giao Dịch & Rút Tiền',
+        settings: 'Cấu Hình Hệ Thống'
+      };
+      document.getElementById('pageTitle').innerText = titles[tabId] || 'Admin Dashboard';
+
+      refreshCurrentTab();
+    }
+
+    function refreshCurrentTab() {
+      if (currentTab === 'overview') loadOverviewData();
+      else if (currentTab === 'users') loadUsersData();
+      else if (currentTab === 'transactions') loadTransactionsData();
+    }
+
+    async function loadOverviewData() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const json = await res.json();
+        if (!json.success) return;
+
+        const data = json.data;
+        document.getElementById('statTotalUsers').innerText = data.totalUsers.toLocaleString();
+        document.getElementById('statActiveUsers').innerText = `${data.activeUsers} đang hoạt động`;
+        document.getElementById('statTotalBalance').innerText = `$${(data.totalBalance || 0).toFixed(3)}`;
+        document.getElementById('statTotalEarned').innerText = `Tổng thu nhập: $${(data.totalEarned || 0).toFixed(3)}`;
+        document.getElementById('statAdsWatched').innerText = data.totalAdsWatched.toLocaleString();
+        document.getElementById('statTotalReferrals').innerText = data.totalReferrals.toLocaleString();
+        document.getElementById('statQualifiedReferrals').innerText = `${data.qualifiedReferrals} lượt đủ điều kiện`;
+
+        // Render Recent Users
+        const tbodyUsers = document.getElementById('tableRecentUsers');
+        if (data.recentUsers && data.recentUsers.length > 0) {
+          tbodyUsers.innerHTML = data.recentUsers.map(u => `
+            <tr>
+              <td>
+                <div class="user-info-cell">
+                  <div class="user-avatar-chip">${(u.username || 'U')[0].toUpperCase()}</div>
+                  <strong>${u.username}</strong>
+                </div>
+              </td>
+              <td>${u.email || 'N/A'}</td>
+              <td>$${(u.balance || 0).toFixed(3)}</td>
+              <td>${u.adsWatched || 0}</td>
+              <td><span class="badge ${u.status === 'banned' ? 'badge-banned' : 'badge-active'}">${u.status === 'banned' ? 'Banned' : 'Active'}</span></td>
+            </tr>
+          `).join('');
+        } else {
+          tbodyUsers.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:16px;">Chưa có dữ liệu người dùng</td></tr>`;
+        }
+
+        // Render Recent Transactions
+        const tbodyTx = document.getElementById('tableRecentTransactions');
+        if (data.recentTransactions && data.recentTransactions.length > 0) {
+          tbodyTx.innerHTML = data.recentTransactions.map(tx => `
+            <tr>
+              <td>${tx.userId ? tx.userId.username : 'N/A'}</td>
+              <td><span style="font-weight:600;">${formatTxType(tx.type)}</span></td>
+              <td style="font-weight:700; color:${tx.type === 'WITHDRAWAL' ? 'var(--danger)' : 'var(--success)'};">${tx.type === 'WITHDRAWAL' ? '-' : '+'}$${(tx.amount || 0).toFixed(3)}</td>
+              <td><span class="badge ${getBadgeStatusClass(tx.status)}">${tx.status}</span></td>
+            </tr>
+          `).join('');
+        } else {
+          tbodyTx.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:16px;">Chưa có giao dịch gần đây</td></tr>`;
+        }
+      } catch (err) {
+        console.error('Error loading overview stats:', err);
+      }
+    }
+
+    async function loadUsersData() {
+      const q = document.getElementById('userSearchInput').value;
+      const status = document.getElementById('userStatusSelect').value;
+
+      try {
+        const res = await fetch(`/api/admin/users?q=${encodeURIComponent(q)}&status=${status}`);
+        const json = await res.json();
+        if (!json.success) return;
+
+        const users = json.data.users;
+        const tbody = document.getElementById('tableUsersList');
+        if (users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:#94A3B8;">Không tìm thấy người dùng phù hợp</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>
+              <div class="user-info-cell">
+                <div class="user-avatar-chip">${(u.username || 'U')[0].toUpperCase()}</div>
+                <div>
+                  <strong>${u.username}</strong>
+                </div>
+              </div>
+            </td>
+            <td>${u.email || 'N/A'}</td>
+            <td style="font-weight:700; color:var(--primary);">$${(u.balance || 0).toFixed(3)}</td>
+            <td>${u.adsWatched || 0}</td>
+            <td><code>${u.referralCode || 'N/A'}</code></td>
+            <td><span class="badge ${u.status === 'banned' ? 'badge-banned' : 'badge-active'}">${u.status === 'banned' ? 'Đã khóa' : 'Hoạt động'}</span></td>
+            <td>${new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
+            <td>
+              <button class="btn-action btn-outline" onclick="openUserModal('${u._id}')">Chi tiết & Sửa</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading users:', err);
+      }
+    }
+
+    function handleUserSearch(e) {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadUsersData();
+      }, 300);
+    }
+
+    async function openUserModal(userId) {
+      selectedUserId = userId;
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`);
+        const json = await res.json();
+        if (!json.success) return;
+
+        const u = json.data.user;
+        document.getElementById('modalUsername').innerText = `Chi tiết người dùng: ${u.username}`;
+        document.getElementById('modalInputUsername').value = u.username;
+        document.getElementById('modalInputEmail').value = u.email || '';
+        document.getElementById('modalInputBalance').value = `$${(u.balance || 0).toFixed(3)}`;
+        document.getElementById('modalInputTotalEarned').value = `$${(u.totalEarned || 0).toFixed(3)}`;
+        document.getElementById('modalInputAdsWatched').value = u.adsWatched || 0;
+        document.getElementById('modalInputReferralCode').value = u.referralCode || 'N/A';
+
+        document.getElementById('inputAdjustAmount').value = '';
+        document.getElementById('inputAdjustNote').value = '';
+
+        document.getElementById('userModal').classList.add('open');
+      } catch (err) {
+        alert('Có lỗi xảy ra khi xem thông tin người dùng');
+      }
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.remove('open');
+      selectedUserId = null;
+    }
+
+    async function submitBalanceAdjustment() {
+      if (!selectedUserId) return;
+      const amount = document.getElementById('inputAdjustAmount').value;
+      const note = document.getElementById('inputAdjustNote').value;
+
+      if (!amount || parseFloat(amount) === 0) {
+        alert('Vui lòng nhập số tiền hợp lệ');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/balance`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: parseFloat(amount), note })
+        });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          openUserModal(selectedUserId);
+          refreshCurrentTab();
+        }
+      } catch (err) {
+        alert('Cập nhật số dư thất bại');
+      }
+    }
+
+    async function updateUserAccountStatus(newStatus) {
+      if (!selectedUserId) return;
+      if (!confirm(`Bạn có chắc chắn muốn chuyển trạng thái tài khoản thành ${newStatus === 'banned' ? 'Khóa (Banned)' : 'Hoạt động (Active)'}?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          openUserModal(selectedUserId);
+          refreshCurrentTab();
+        }
+      } catch (err) {
+        alert('Cập nhật trạng thái thất bại');
+      }
+    }
+
+    async function loadTransactionsData() {
+      const type = document.getElementById('txTypeSelect').value;
+      const status = document.getElementById('txStatusSelect').value;
+
+      try {
+        const res = await fetch(`/api/admin/transactions?type=${type}&status=${status}`);
+        const json = await res.json();
+        if (!json.success) return;
+
+        const transactions = json.data.transactions;
+        const tbody = document.getElementById('tableTransactionsList');
+        if (transactions.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#94A3B8;">Không có giao dịch nào phù hợp</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = transactions.map(tx => `
+          <tr>
+            <td><code>${tx._id.substring(18)}</code></td>
+            <td>
+              <strong>${tx.userId ? tx.userId.username : 'N/A'}</strong>
+              <div style="font-size:12px; color:var(--text-muted);">${tx.userId ? tx.userId.email : ''}</div>
+            </td>
+            <td><span style="font-weight:600;">${formatTxType(tx.type)}</span></td>
+            <td style="font-weight:700; color:${tx.type === 'WITHDRAWAL' ? 'var(--danger)' : 'var(--success)'};">${tx.type === 'WITHDRAWAL' ? '-' : '+'}$${(tx.amount || 0).toFixed(3)}</td>
+            <td><span class="badge ${getBadgeStatusClass(tx.status)}">${tx.status}</span></td>
+            <td>${new Date(tx.createdAt).toLocaleString('vi-VN')}</td>
+            <td>
+              ${tx.type === 'WITHDRAWAL' && tx.status === 'PENDING' ? `
+                <button class="btn-action btn-success" onclick="updateTxStatus('${tx._id}', 'COMPLETED')">Duyệt</button>
+                <button class="btn-action btn-danger" onclick="updateTxStatus('${tx._id}', 'REJECTED')">Từ chối</button>
+              ` : `<span style="color:var(--text-muted); font-size:12px;">Chỉ xem</span>`}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading transactions:', err);
+      }
+    }
+
+    async function updateTxStatus(txId, status) {
+      if (!confirm(`Xác nhận ${status === 'COMPLETED' ? 'duyệt' : 'từ chối'} giao dịch này?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/transactions/${txId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          loadTransactionsData();
+        }
+      } catch (err) {
+        alert('Cập nhật trạng thái giao dịch thất bại');
+      }
+    }
+
+    function formatTxType(type) {
+      const map = {
+        AD_REWARD: 'Thưởng xem QC',
+        REFERRAL_REWARD: 'Thưởng giới thiệu',
+        WITHDRAWAL: 'Rút tiền',
+        ADMIN_ADJUSTMENT: 'Admin điều chỉnh',
+        DAILY_BONUS: 'Thưởng điểm danh'
+      };
+      return map[type] || type;
+    }
+
+    function getBadgeStatusClass(status) {
+      if (status === 'COMPLETED') return 'badge-completed';
+      if (status === 'PENDING') return 'badge-pending';
+      if (status === 'REJECTED' || status === 'FAILED') return 'badge-rejected';
+      return 'badge-active';
+    }
+
+    // Initial Load
+    loadOverviewData();
+  </script>
+</body>
+</html>
