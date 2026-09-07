@@ -721,11 +721,8 @@
       <div class="header-actions">
         <div class="status-badge">
           <span class="status-dot"></span>
-          <span>System Online</span>
+          <span>Online</span>
         </div>
-        <button class="btn-refresh" onclick="refreshCurrentTab()">
-          <span>🔄</span> <span>Làm mới</span>
-        </button>
       </div>
     </header>
 
@@ -992,6 +989,7 @@
     let currentTab = 'overview';
     let selectedUserId = null;
     let searchTimeout = null;
+    const tabLoaded = { overview: false, users: false, transactions: false, settings: true };
 
     function switchTab(tabId) {
       currentTab = tabId;
@@ -1012,13 +1010,12 @@
       };
       document.getElementById('pageTitle').innerText = titles[tabId] || 'Admin Dashboard';
 
-      refreshCurrentTab();
-    }
-
-    function refreshCurrentTab() {
-      if (currentTab === 'overview') loadOverviewData();
-      else if (currentTab === 'users') loadUsersData();
-      else if (currentTab === 'transactions') loadTransactionsData();
+      // Lazy load: chỉ load dữ liệu lần đầu khi chuyển tab
+      if (!tabLoaded[tabId]) {
+        if (tabId === 'overview') loadOverviewData();
+        else if (tabId === 'users') loadUsersData();
+        else if (tabId === 'transactions') loadTransactionsData();
+      }
     }
 
     async function loadOverviewData() {
@@ -1071,6 +1068,8 @@
         } else {
           tbodyTx.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:16px;">Chưa có giao dịch gần đây</td></tr>`;
         }
+
+        tabLoaded.overview = true;
       } catch (err) {
         console.error('Error loading overview stats:', err);
       }
@@ -1113,6 +1112,8 @@
             </td>
           </tr>
         `).join('');
+
+        tabLoaded.users = true;
       } catch (err) {
         console.error('Error loading users:', err);
       }
@@ -1238,6 +1239,8 @@
             </td>
           </tr>
         `).join('');
+
+        tabLoaded.transactions = true;
       } catch (err) {
         console.error('Error loading transactions:', err);
       }
@@ -1288,16 +1291,21 @@
       if (u === 'viewearnadmin' && p === '123456aA@') {
         sessionStorage.setItem('v2e_admin_auth', '1');
         document.getElementById('loginOverlay').classList.add('hidden');
-        loadOverviewData();
+        initDashboard();
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
     }
 
+    // Lazy init: load tab overview (tab mặc định) sau khi đăng nhập
+    function initDashboard() {
+      loadOverviewData();
+    }
+
     // Check session on load
     if (sessionStorage.getItem('v2e_admin_auth') === '1') {
       document.getElementById('loginOverlay').classList.add('hidden');
-      loadOverviewData();
+      initDashboard();
     }
   </script>
 </body>
