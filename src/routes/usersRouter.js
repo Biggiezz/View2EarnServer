@@ -10,7 +10,7 @@ import { generateUniqueReferralCode, claimReferralCode, checkAndQualifyReferral 
 const router = Router();
 
 // Server-controlled default reward
-const DEFAULT_REWARD_AMOUNT = parseFloat(process.env.DEFAULT_AD_REWARD || '0.50');
+const DEFAULT_REWARD_AMOUNT = parseFloat(process.env.DEFAULT_AD_REWARD || '0.001');
 const MAX_ALLOWED_REWARD = 1.00;
 
 // Helper: Tạo JWT Token
@@ -319,7 +319,7 @@ router.post('/reward', optionalAuth, rewardLimiter, async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(2)} từ việc xem quảng cáo!`,
+      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(3)} từ việc xem quảng cáo!`,
       data: {
         _id: updatedUser._id,
         username: updatedUser.username,
