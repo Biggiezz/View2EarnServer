@@ -552,9 +552,128 @@
         margin-left: 80px;
       }
     }
+
+    /* Login Screen */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--bg-body);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-overlay.hidden {
+      display: none;
+    }
+    .login-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-card .login-logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFF;
+      margin: 0 auto 16px;
+    }
+    .login-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .login-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    .login-field {
+      width: 100%;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .login-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .login-field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+    .login-field input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 8px;
+    }
+    .login-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+    .login-error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-logo">V</div>
+      <h2>View2Earn Admin</h2>
+      <p>Đăng nhập để truy cập bảng điều khiển</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="login-field">
+          <label for="loginUsername">Tên đăng nhập</label>
+          <input type="text" id="loginUsername" placeholder="Nhập tên đăng nhập" autocomplete="username" required>
+        </div>
+        <div class="login-field">
+          <label for="loginPassword">Mật khẩu</label>
+          <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="login-btn">Đăng nhập</button>
+        <div class="login-error" id="loginError">Sai tên đăng nhập hoặc mật khẩu</div>
+      </form>
+    </div>
+  </div>
 
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
@@ -1161,8 +1280,25 @@
       return 'badge-active';
     }
 
-    // Initial Load
-    loadOverviewData();
+    // Login Handler
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value;
+      if (u === 'viewearnadmin' && p === '123456aA@') {
+        sessionStorage.setItem('v2e_admin_auth', '1');
+        document.getElementById('loginOverlay').classList.add('hidden');
+        loadOverviewData();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    // Check session on load
+    if (sessionStorage.getItem('v2e_admin_auth') === '1') {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      loadOverviewData();
+    }
   </script>
 </body>
 </html>
