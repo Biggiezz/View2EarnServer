@@ -164,7 +164,7 @@ router.post("/complete", protect, rewardLimiter, async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(2)} từ việc xem quảng cáo!`,
+      message: `Chúc mừng bạn đã nhận được +$${amount.toFixed(3)} từ việc xem quảng cáo!`,
       data: {
         _id: updatedUser._id,
         username: updatedUser.username,
