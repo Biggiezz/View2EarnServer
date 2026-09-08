@@ -291,15 +291,16 @@ router.get('/transactions', async (req, res, next) => {
 // GET /api/admin/withdrawals - Danh sách chuyên biệt các yêu cầu rút tiền
 router.get('/withdrawals', async (req, res, next) => {
   try {
-    const { status, q, page = 1, limit = 20 } = req.query;
+    const { status, q, search, page = 1, limit = 20 } = req.query;
+    const queryTerm = (q || search || '').trim();
 
     const filter = { type: 'WITHDRAWAL' };
     if (status && status !== 'all') {
       filter.status = status;
     }
 
-    if (q) {
-      const regex = new RegExp(q.trim(), 'i');
+    if (queryTerm) {
+      const regex = new RegExp(queryTerm, 'i');
       const matchedUsers = await User.find({
         $or: [{ username: regex }, { email: regex }],
       }).select('_id');
@@ -339,6 +340,7 @@ router.get('/withdrawals', async (req, res, next) => {
       success: true,
       data: {
         withdrawals,
+        transactions: withdrawals,
         stats: {
           pendingCount,
           completedCount,
