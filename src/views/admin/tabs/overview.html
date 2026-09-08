@@ -1,0 +1,75 @@
+<!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-content active">
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Tổng người dùng</div>
+            <div class="stat-value" id="statTotalUsers">0</div>
+            <div class="stat-subtitle" id="statActiveUsers">0 đang hoạt động</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Tổng số dư hệ thống</div>
+            <div class="stat-value" id="statTotalBalance">$0.000</div>
+            <div class="stat-subtitle" id="statTotalEarned">Tổng thu nhập: $0.000</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Lượt xem quảng cáo</div>
+            <div class="stat-value" id="statAdsWatched">0</div>
+            <div class="stat-subtitle">Đã xác nhận xem thành công</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Tổng lượt giới thiệu</div>
+            <div class="stat-value" id="statTotalReferrals">0</div>
+            <div class="stat-subtitle" id="statQualifiedReferrals">0 lượt đủ điều kiện</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Recent Registrations -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Người dùng mới đăng ký</div>
+              <button class="btn-action btn-outline" onclick="switchTab('users')">Xem tất cả</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Người dùng</th>
+                    <th>Email</th>
+                    <th>Số dư</th>
+                    <th>QC đã xem</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentUsers">
+                  <tr><td colspan="5" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">Giao dịch gần nhất</div>
+              <button class="btn-action btn-outline" onclick="switchTab('transactions')">Xem tất cả</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Loại</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentTransactions">
+                  <tr><td colspan="4" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>

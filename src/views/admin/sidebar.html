@@ -1,0 +1,54 @@
+<!-- Backdrop for Mobile Navigation -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileMenu()"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebarNav">
+    <div class="sidebar-brand" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="brand-logo">V</div>
+        <div>
+          <div class="brand-title">View2Earn</div>
+          <div class="brand-subtitle">Admin Portal</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeMobileMenu()" style="display:none;" id="btnCloseMobileDrawer" aria-label="Đóng">&times;</button>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <button class="active" onclick="switchTab('overview')">
+          <span>📊</span> <span>Tổng quan</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('users')">
+          <span>👥</span> <span>Người dùng</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="navBtnWithdrawals" onclick="switchTab('withdrawals')" style="position:relative;">
+          <span>💸</span> <span>Yêu cầu rút tiền</span>
+          <span id="navWithdrawBadge" style="display:none; margin-left:auto; background:#ef4444; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; box-shadow:0 2px 6px rgba(239,68,68,0.4);">0</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('transactions')">
+          <span>💳</span> <span>Lịch sử giao dịch</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchTab('settings')">
+          <span>⚙️</span> <span>Cấu hình Hệ thống</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      View2Earn Server v1.0.23
+      <ul style="list-style:none; padding:0; margin:8px 0 0;">
+        <li>
+          <a href="https://view2earnserver-k66o5lp3e-biggiezzs-projects.vercel.app" target="_blank" style="color:var(--text-muted); font-size:12px; text-decoration:none; transition:var(--transition);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">Privacy Policy</a>
+        </li>
+      </ul>
+    </div>
+  </aside>

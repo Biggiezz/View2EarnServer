@@ -1,0 +1,42 @@
+<!-- TAB 3: TRANSACTIONS & WITHDRAWALS -->
+      <section id="tab-transactions" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Lịch Sử Giao Dịch & Rút Tiền</div>
+            <div class="filter-group">
+              <select id="txTypeSelect" class="select-filter" onchange="loadTransactionsData()">
+                <option value="all">Tất cả loại giao dịch</option>
+                <option value="AD_REWARD">Thưởng xem QC</option>
+                <option value="REFERRAL_REWARD">Thưởng giới thiệu</option>
+                <option value="WITHDRAWAL">Rút tiền</option>
+                <option value="ADMIN_ADJUSTMENT">Admin điều chỉnh</option>
+              </select>
+              <select id="txStatusSelect" class="select-filter" onchange="loadTransactionsData()">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="COMPLETED">Hoàn tất (Completed)</option>
+                <option value="PENDING">Đang chờ (Pending)</option>
+                <option value="REJECTED">Từ chối (Rejected)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã GD</th>
+                  <th>Người dùng</th>
+                  <th>Loại giao dịch</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Thời gian</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableTransactionsList">
+                <tr><td colspan="7" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải danh sách giao dịch...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

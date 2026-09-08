@@ -1,0 +1,71 @@
+<!-- TAB: YÊU CẦU RÚT TIỀN (WITHDRAWALS MANAGEMENT) -->
+      <section id="tab-withdrawals" class="tab-content">
+        <!-- Stat Cards cho Yêu Cầu Rút Tiền -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:20px;">
+          <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+            <div class="stat-header">
+              <span class="stat-title">Đang Chờ Duyệt</span>
+              <span class="stat-icon" style="background:#fef3c7; color:#d97706;">⏳</span>
+            </div>
+            <div class="stat-value" id="statPendingWithdrawCount" style="color:#d97706;">0</div>
+            <div class="stat-subtext" id="statPendingWithdrawAmount">Tổng: $0.000 (~0 đ)</div>
+          </div>
+
+          <div class="stat-card" style="border-left: 4px solid #10b981;">
+            <div class="stat-header">
+              <span class="stat-title">Đã Hoàn Tất (Thành công)</span>
+              <span class="stat-icon" style="background:#d1fae5; color:#059669;">✓</span>
+            </div>
+            <div class="stat-value" id="statCompletedWithdrawCount" style="color:#059669;">0</div>
+            <div class="stat-subtext">Đã thanh toán cho người dùng</div>
+          </div>
+
+          <div class="stat-card" style="border-left: 4px solid #ef4444;">
+            <div class="stat-header">
+              <span class="stat-title">Đã Từ Chối (Đã hoàn tiền)</span>
+              <span class="stat-icon" style="background:#fee2e2; color:#dc2626;">✕</span>
+            </div>
+            <div class="stat-value" id="statRejectedWithdrawCount" style="color:#dc2626;">0</div>
+            <div class="stat-subtext">Đã cộng hoàn lại số dư ví</div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+            <div class="panel-title">Danh Sách Yêu Cầu Rút Tiền</div>
+            <div class="filter-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input type="text" id="withdrawSearchInput" class="search-input" placeholder="Tìm người dùng, STK, chủ TK..." oninput="debounceWithdrawSearch()">
+              <select id="withdrawStatusSelect" class="select-filter" onchange="loadWithdrawalsData(1)">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="PENDING" selected>Đang chờ duyệt (Pending)</option>
+                <option value="COMPLETED">Đã hoàn tất (Completed)</option>
+                <option value="REJECTED">Đã từ chối (Rejected)</option>
+              </select>
+              <button class="btn-action btn-outline" onclick="loadWithdrawalsData(1)" title="Làm mới danh sách">🔄 Làm mới</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã Lệnh</th>
+                  <th>Người Dùng</th>
+                  <th>Số Tiền</th>
+                  <th>Ngân Hàng & STK</th>
+                  <th>Tên Chủ Tài Khoản</th>
+                  <th>Thời Gian</th>
+                  <th>Trạng Thái</th>
+                  <th>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableWithdrawalsList">
+                <tr><td colspan="8" style="text-align:center; padding:24px; color:#94A3B8;">Đang tải danh sách yêu cầu rút tiền...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar" id="withdrawPagination" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+          </div>
+        </div>
+      </section>

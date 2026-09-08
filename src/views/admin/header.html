@@ -1,0 +1,20 @@
+<!-- Top Header Bar -->
+    <header class="top-header">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button id="btnMobileMenu" class="btn-hamburger" onclick="toggleMobileMenu()" aria-label="Mở Menu" title="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="header-title" id="pageTitle">Tổng Quan Hệ Thống</div>
+      </div>
+      <div class="header-actions" style="display:flex; align-items:center; gap:10px;">
+        <button id="btnSoundToggle" class="btn-action btn-outline header-btn" onclick="toggleSoundAlert()" style="font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Bật/Tắt chuông báo âm thanh khi có yêu cầu rút tiền mới">
+          <span id="soundIcon">🔔</span> <span class="header-btn-label" id="soundText">Chuông: Bật</span>
+        </button>
+        <div class="status-badge header-badge" id="sseStatusBadge" title="Trạng thái kết nối thời gian thực với Server">
+          <span class="status-dot"></span>
+          <span class="header-badge-label" id="sseStatusText">Real-time</span>
+        </div>
+      </div>
+    </header>

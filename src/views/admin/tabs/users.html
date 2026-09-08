@@ -1,0 +1,36 @@
+<!-- TAB 2: USERS MANAGEMENT -->
+      <section id="tab-users" class="tab-content">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Danh sách Người dùng</div>
+            <div class="filter-group">
+              <input type="text" id="userSearchInput" class="input-search" placeholder="Tìm theo tên, email, mã giới thiệu..." onkeyup="handleUserSearch(event)">
+              <select id="userStatusSelect" class="select-filter" onchange="loadUsersData()">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động (Active)</option>
+                <option value="banned">Tạm khóa (Banned)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Người dùng</th>
+                  <th>Email</th>
+                  <th>Số dư ví</th>
+                  <th>QC xem</th>
+                  <th>Mã Giới Thiệu</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tham gia</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableUsersList">
+                <tr><td colspan="8" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải danh sách người dùng...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>

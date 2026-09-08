@@ -1,0 +1,50 @@
+<!-- Modal: Quét mã VietQR chuyển khoản nhanh -->
+  <div class="modal-backdrop" id="vietqrModal">
+    <div class="modal-dialog" style="max-width:480px; text-align:center;">
+      <div class="modal-header" style="text-align:left;">
+        <div class="modal-title">📱 Quét Mã VietQR Chuyển Tiền</div>
+        <button class="modal-close" onclick="closeVietQrModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:16px 20px; text-align:center;">
+        <div style="background:#fff; padding:10px; border-radius:12px; display:inline-block; border:1px solid #e2e8f0; box-shadow:0 4px 12px rgba(0,0,0,0.06); margin-bottom:14px;">
+          <img id="vietqrImage" src="" alt="Mã VietQR" style="width:250px; height:auto; display:block; border-radius:6px; min-height:250px; object-fit:contain; background:#f8fafc;">
+        </div>
+
+        <div style="text-align:left; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0; font-size:13px; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Ngân hàng:</span>
+            <strong id="vietqrBankName" style="color:#1e293b;">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Số tài khoản:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong id="vietqrAccNum" style="color:#2563eb; font-size:15px; font-family:monospace;">-</strong>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyFieldText('vietqrAccNum', 'Số tài khoản')">📋 Copy</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Chủ tài khoản:</span>
+            <strong id="vietqrAccHolder" style="color:#1e293b; text-transform:uppercase;">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Số tiền thanh toán:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong id="vietqrAmountVND" style="color:#10b981; font-size:15px;">-</strong>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyRawText(currentVietQrRawVND, 'Số tiền VNĐ')">📋 Copy</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Nội dung CK:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span id="vietqrContent" style="color:#64748b; font-family:monospace; font-size:12px;">-</span>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyFieldText('vietqrContent', 'Nội dung chuyển khoản')">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button class="btn-action btn-outline" onclick="closeVietQrModal()">Đóng</button>
+        <button class="btn-action btn-success" id="btnConfirmQrTransfer" onclick="confirmFromQrModal()">✓ Đã chuyển tiền (Duyệt lệnh)</button>
+      </div>
+    </div>
+  </div>

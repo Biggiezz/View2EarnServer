@@ -1,0 +1,22 @@
+<!-- Modal: Xác nhận từ chối và tự động hoàn tiền -->
+  <div class="modal-backdrop" id="rejectWithdrawModal">
+    <div class="modal-dialog" style="max-width:480px;">
+      <div class="modal-header">
+        <div class="modal-title">✕ Từ Chối Lệnh Rút Tiền</div>
+        <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div style="background:#fee2e2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:16px; color:#991b1b; font-size:13px; line-height:1.6;">
+          ⚠️ <strong>Lưu ý hoàn tiền:</strong> Khi bạn bấm xác nhận từ chối, hệ thống sẽ <strong>tự động cộng hoàn lại số tiền <span id="rejectModalAmount" style="font-weight:bold;">$0.000</span></strong> vào ví của người dùng <strong id="rejectModalUsername">-</strong>.
+        </div>
+        <div class="form-group">
+          <label style="font-weight:600; margin-bottom:6px; display:block;">Lý do từ chối (Ghi chú lưu vào giao dịch):</label>
+          <textarea id="rejectReasonInput" class="form-control" rows="3" placeholder="Nhập lý do từ chối (VD: Số tài khoản không đúng, Ngân hàng bảo trì,...)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action btn-outline" onclick="closeRejectModal()">Hủy</button>
+        <button class="btn-action btn-danger" onclick="submitRejectWithdrawal()">Xác nhận Từ Chối & Hoàn Tiền</button>
+      </div>
+    </div>
+  </div>

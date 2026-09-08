@@ -1,0 +1,69 @@
+<!-- MODAL: User Details & Balance Adjustment -->
+  <div class="modal-overlay" id="userModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="modalUsername">Chi tiết Người dùng</div>
+        <button class="modal-close" onclick="closeUserModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="modalInputUsername" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="text" id="modalInputEmail" class="form-control" readonly>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số dư ví hiện tại ($)</label>
+            <input type="text" id="modalInputBalance" class="form-control" readonly style="font-weight:700; color:var(--primary);">
+          </div>
+          <div class="form-group">
+            <label>Tổng thu nhập đã kiếm được ($)</label>
+            <input type="text" id="modalInputTotalEarned" class="form-control" readonly>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số quảng cáo đã xem</label>
+            <input type="text" id="modalInputAdsWatched" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Mã giới thiệu của user</label>
+            <input type="text" id="modalInputReferralCode" class="form-control" readonly>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+        <div class="panel-title" style="font-size:15px; margin-bottom:12px;">Cộng / Trừ Số Dư Ví Người Dùng</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Số tiền điều chỉnh (VD: +0.500 hoặc -0.100)</label>
+            <input type="number" step="0.001" id="inputAdjustAmount" class="form-control" placeholder="Nhập số tiền...">
+          </div>
+          <div class="form-group">
+            <label>Ghi chú điều chỉnh</label>
+            <input type="text" id="inputAdjustNote" class="form-control" placeholder="Lý do điều chỉnh...">
+          </div>
+        </div>
+        <button class="btn-action btn-primary" onclick="submitBalanceAdjustment()">Thực hiện điều chỉnh số dư</button>
+
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+        <div class="panel-title" style="font-size:15px; margin-bottom:12px;">Trạng Thái Tài Khoản</div>
+        <div style="display:flex; gap:12px;">
+          <button class="btn-action btn-success" onclick="updateUserAccountStatus('active')">Mở khóa / Hoạt động</button>
+          <button class="btn-action btn-danger" onclick="updateUserAccountStatus('banned')">Tạm khóa Tài khoản (Ban)</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action btn-outline" onclick="closeUserModal()">Đóng</button>
+      </div>
+    </div>
+  </div>

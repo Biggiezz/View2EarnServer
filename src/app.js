@@ -15,11 +15,11 @@ import { generalLimiter } from './middlewares/rateLimiter.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const loadHTMLView = (filename) => {
+const loadViewPart = (relativePath) => {
   const possiblePaths = [
-    path.join(__dirname, 'views', filename),
-    path.join(process.cwd(), 'src', 'views', filename),
-    path.join(process.cwd(), 'views', filename),
+    path.join(__dirname, 'views', relativePath),
+    path.join(process.cwd(), 'src', 'views', relativePath),
+    path.join(process.cwd(), 'views', relativePath),
   ];
 
   for (const p of possiblePaths) {
@@ -31,7 +31,49 @@ const loadHTMLView = (filename) => {
       // Continue checking next path
     }
   }
-  return null;
+  return '';
+};
+
+const renderAdminView = () => {
+  let master = loadViewPart('admin.html');
+  if (!master) return null;
+
+  // 1. Chèn CSS
+  const css = loadViewPart('admin/css/admin.css');
+  if (css) master = master.replace('<!-- {{CSS}} -->', `<style>\n${css}\n</style>`);
+
+  // 2. Chèn các phần giao diện HTML (Partials, Tabs, Modals)
+  const htmlPartials = [
+    { tag: '<!-- {{SIDEBAR}} -->', file: 'admin/sidebar.html' },
+    { tag: '<!-- {{HEADER}} -->', file: 'admin/header.html' },
+    { tag: '<!-- {{TAB_OVERVIEW}} -->', file: 'admin/tabs/overview.html' },
+    { tag: '<!-- {{TAB_USERS}} -->', file: 'admin/tabs/users.html' },
+    { tag: '<!-- {{TAB_WITHDRAWALS}} -->', file: 'admin/tabs/withdrawals.html' },
+    { tag: '<!-- {{TAB_TRANSACTIONS}} -->', file: 'admin/tabs/transactions.html' },
+    { tag: '<!-- {{TAB_SETTINGS}} -->', file: 'admin/tabs/settings.html' },
+    { tag: '<!-- {{MODAL_USER}} -->', file: 'admin/modals/user.html' },
+    { tag: '<!-- {{MODAL_VIETQR}} -->', file: 'admin/modals/vietqr.html' },
+    { tag: '<!-- {{MODAL_REJECT}} -->', file: 'admin/modals/reject.html' },
+  ];
+
+  for (const p of htmlPartials) {
+    const part = loadViewPart(p.file);
+    if (part) master = master.replace(p.tag, part);
+  }
+
+  // 3. Chèn các file JavaScript chức năng
+  const scriptPartials = [
+    { tag: '<!-- {{JS_DASHBOARD}} -->', file: 'admin/js/dashboard.js' },
+    { tag: '<!-- {{JS_WITHDRAWALS}} -->', file: 'admin/js/withdrawals.js' },
+    { tag: '<!-- {{JS_REALTIME}} -->', file: 'admin/js/realtime.js' },
+  ];
+
+  for (const s of scriptPartials) {
+    const script = loadViewPart(s.file);
+    if (script) master = master.replace(s.tag, `<script>\n${script}\n</script>`);
+  }
+
+  return master;
 };
 
 const app = express();
@@ -54,14 +96,14 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Trang chủ & Privacy Policy (Phục vụ tĩnh nhanh chóng không cần DB)
 app.get(['/', '/privacy-policy', '/privacy'], (req, res) => {
-  const html = loadHTMLView('privacy.html');
+  const html = loadViewPart('privacy.html');
   if (html) return res.type('html').send(html);
   res.status(404).send('Privacy Policy Page Not Found');
 });
 
-// Trang Quản trị Admin Dashboard
+// Trang Quản trị Admin Dashboard (Tự động lắp ghép các module HTML/CSS/JS)
 app.get(['/admin', '/admin/{*path}'], (req, res) => {
-  const html = loadHTMLView('admin.html');
+  const html = renderAdminView();
   if (html) return res.type('html').send(html);
   res.status(404).send('Admin Dashboard Page Not Found');
 });
