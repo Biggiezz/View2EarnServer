@@ -46,6 +46,11 @@ const rewardTransactionSchema = new mongoose.Schema(
       userAgent: { type: String, default: '' },
       placementId: { type: String, default: '' },
       note: { type: String, default: '' },
+      bankName: { type: String, default: '' },
+      accountNumber: { type: String, default: '' },
+      accountHolder: { type: String, default: '' },
+      userNote: { type: String, default: '' },
+      rejectReason: { type: String, default: '' },
     },
   },
   {

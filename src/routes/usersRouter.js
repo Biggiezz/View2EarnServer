@@ -6,6 +6,7 @@ import RewardTransaction from '../models/RewardTransaction.js';
 import { protect, optionalAuth } from '../middlewares/auth.js';
 import { authLimiter, rewardLimiter } from '../middlewares/rateLimiter.js';
 import { generateUniqueReferralCode, claimReferralCode, checkAndQualifyReferral } from '../services/referralService.js';
+import { notificationService } from '../services/notificationService.js';
 
 const router = Router();
 
@@ -372,5 +373,95 @@ router.get('/history', protect, async (req, res, next) => {
   }
 });
 
+/**
+ * POST /api/users/withdraw - Gửi yêu cầu rút tiền
+ */
+router.post('/withdraw', protect, async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { accountHolder, bankName, accountNumber, amount, note } = req.body;
+
+    const withdrawAmount = parseFloat(amount);
+    if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Số tiền rút không hợp lệ',
+      });
+    }
+
+    if (!accountHolder || !bankName || !accountNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng cung cấp đầy đủ thông tin tài khoản ngân hàng',
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Người dùng không tồn tại',
+      });
+    }
+
+    if (user.balance < withdrawAmount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Số dư hiện tại không đủ để thực hiện rút số tiền này',
+      });
+    }
+
+    const balanceBefore = user.balance;
+    user.balance = Math.max(0, user.balance - withdrawAmount);
+    await user.save();
+
+    const transaction = await RewardTransaction.create({
+      userId,
+      amount: withdrawAmount,
+      type: 'WITHDRAWAL',
+      status: 'PENDING',
+      balanceBefore,
+      balanceAfter: user.balance,
+      metadata: {
+        bankName,
+        accountNumber,
+        accountHolder,
+        userNote: note || '',
+        note: note || `Rút về ${bankName} - ${accountNumber} (${accountHolder})`,
+      },
+    });
+
+    // Phát thông báo Real-time cho Admin Dashboard
+    try {
+      notificationService.notifyNewWithdrawal({
+        id: transaction._id,
+        userId: user._id,
+        username: user.username,
+        email: user.email,
+        amount: withdrawAmount,
+        bankName,
+        accountNumber,
+        accountHolder,
+        note: note || '',
+        createdAt: transaction.createdAt,
+      });
+    } catch (notifyErr) {
+      console.error('[Notification] Error broadcasting withdrawal:', notifyErr);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Gửi yêu cầu rút tiền thành công, đang chờ quản trị viên phê duyệt',
+      data: {
+        transaction,
+        currentBalance: user.balance,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
+
 

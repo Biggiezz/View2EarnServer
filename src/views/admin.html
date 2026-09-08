@@ -239,6 +239,11 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
     /* Stat Cards Grid */
     .stats-grid {
       display: grid;
@@ -697,8 +702,14 @@
         </button>
       </li>
       <li class="nav-item">
+        <button id="navBtnWithdrawals" onclick="switchTab('withdrawals')" style="position:relative;">
+          <span>💸</span> <span>Yêu cầu rút tiền</span>
+          <span id="navWithdrawBadge" style="display:none; margin-left:auto; background:#ef4444; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; box-shadow:0 2px 6px rgba(239,68,68,0.4);">0</span>
+        </button>
+      </li>
+      <li class="nav-item">
         <button onclick="switchTab('transactions')">
-          <span>💳</span> <span>Giao dịch & Rút tiền</span>
+          <span>💳</span> <span>Lịch sử giao dịch</span>
         </button>
       </li>
       <li class="nav-item">
@@ -723,13 +734,19 @@
     <!-- Top Header Bar -->
     <header class="top-header">
       <div class="header-title" id="pageTitle">Tổng Quan Hệ Thống</div>
-      <div class="header-actions">
-        <div class="status-badge">
+      <div class="header-actions" style="display:flex; align-items:center; gap:12px;">
+        <button id="btnSoundToggle" class="btn-action btn-outline" onclick="toggleSoundAlert()" style="font-size:12px; padding:6px 14px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Bật/Tắt chuông báo âm thanh khi có yêu cầu rút tiền mới">
+          <span id="soundIcon">🔔</span> <span id="soundText">Chuông: Bật</span>
+        </button>
+        <div class="status-badge" id="sseStatusBadge" title="Trạng thái kết nối thời gian thực với Server">
           <span class="status-dot"></span>
-          <span>Online</span>
+          <span id="sseStatusText">Real-time</span>
         </div>
       </div>
     </header>
+
+    <!-- Floating Toast Notifications Container -->
+    <div id="toastContainer" style="position:fixed; top:24px; right:24px; z-index:99999; display:flex; flex-direction:column; gap:12px; max-width:400px; pointer-events:none;"></div>
 
     <!-- Content Area -->
     <main class="content-container">
@@ -843,6 +860,78 @@
                 <tr><td colspan="8" style="text-align:center; padding:20px; color:#94A3B8;">Đang tải danh sách người dùng...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: YÊU CẦU RÚT TIỀN (WITHDRAWALS MANAGEMENT) -->
+      <section id="tab-withdrawals" class="tab-content">
+        <!-- Stat Cards cho Yêu Cầu Rút Tiền -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:20px;">
+          <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+            <div class="stat-header">
+              <span class="stat-title">Đang Chờ Duyệt</span>
+              <span class="stat-icon" style="background:#fef3c7; color:#d97706;">⏳</span>
+            </div>
+            <div class="stat-value" id="statPendingWithdrawCount" style="color:#d97706;">0</div>
+            <div class="stat-subtext" id="statPendingWithdrawAmount">Tổng: $0.000 (~0 đ)</div>
+          </div>
+
+          <div class="stat-card" style="border-left: 4px solid #10b981;">
+            <div class="stat-header">
+              <span class="stat-title">Đã Hoàn Tất (Thành công)</span>
+              <span class="stat-icon" style="background:#d1fae5; color:#059669;">✓</span>
+            </div>
+            <div class="stat-value" id="statCompletedWithdrawCount" style="color:#059669;">0</div>
+            <div class="stat-subtext">Đã thanh toán cho người dùng</div>
+          </div>
+
+          <div class="stat-card" style="border-left: 4px solid #ef4444;">
+            <div class="stat-header">
+              <span class="stat-title">Đã Từ Chối (Đã hoàn tiền)</span>
+              <span class="stat-icon" style="background:#fee2e2; color:#dc2626;">✕</span>
+            </div>
+            <div class="stat-value" id="statRejectedWithdrawCount" style="color:#dc2626;">0</div>
+            <div class="stat-subtext">Đã cộng hoàn lại số dư ví</div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+            <div class="panel-title">Danh Sách Yêu Cầu Rút Tiền</div>
+            <div class="filter-group" style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input type="text" id="withdrawSearchInput" class="search-input" placeholder="Tìm người dùng, STK, chủ TK..." oninput="debounceWithdrawSearch()" style="min-width:240px;">
+              <select id="withdrawStatusSelect" class="select-filter" onchange="loadWithdrawalsData(1)">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="PENDING" selected>Đang chờ duyệt (Pending)</option>
+                <option value="COMPLETED">Đã hoàn tất (Completed)</option>
+                <option value="REJECTED">Đã từ chối (Rejected)</option>
+              </select>
+              <button class="btn-action btn-outline" onclick="loadWithdrawalsData(1)" title="Làm mới danh sách">🔄 Làm mới</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã Lệnh</th>
+                  <th>Người Dùng</th>
+                  <th>Số Tiền</th>
+                  <th>Ngân Hàng & STK</th>
+                  <th>Tên Chủ Tài Khoản</th>
+                  <th>Thời Gian</th>
+                  <th>Trạng Thái</th>
+                  <th>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableWithdrawalsList">
+                <tr><td colspan="8" style="text-align:center; padding:24px; color:#94A3B8;">Đang tải danh sách yêu cầu rút tiền...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar" id="withdrawPagination" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
           </div>
         </div>
       </section>
@@ -990,18 +1079,92 @@
     </div>
   </div>
 
+  <!-- Modal: Quét mã VietQR chuyển khoản nhanh -->
+  <div class="modal-backdrop" id="vietqrModal">
+    <div class="modal-dialog" style="max-width:480px; text-align:center;">
+      <div class="modal-header" style="text-align:left;">
+        <div class="modal-title">📱 Quét Mã VietQR Chuyển Tiền</div>
+        <button class="modal-close" onclick="closeVietQrModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:16px 20px; text-align:center;">
+        <div style="background:#fff; padding:10px; border-radius:12px; display:inline-block; border:1px solid #e2e8f0; box-shadow:0 4px 12px rgba(0,0,0,0.06); margin-bottom:14px;">
+          <img id="vietqrImage" src="" alt="Mã VietQR" style="width:250px; height:auto; display:block; border-radius:6px; min-height:250px; object-fit:contain; background:#f8fafc;">
+        </div>
+
+        <div style="text-align:left; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0; font-size:13px; line-height:1.9;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Ngân hàng:</span>
+            <strong id="vietqrBankName" style="color:#1e293b;">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Số tài khoản:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong id="vietqrAccNum" style="color:#2563eb; font-size:15px; font-family:monospace;">-</strong>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyFieldText('vietqrAccNum', 'Số tài khoản')">📋 Copy</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Chủ tài khoản:</span>
+            <strong id="vietqrAccHolder" style="color:#1e293b; text-transform:uppercase;">-</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Số tiền thanh toán:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong id="vietqrAmountVND" style="color:#10b981; font-size:15px;">-</strong>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyRawText(currentVietQrRawVND, 'Số tiền VNĐ')">📋 Copy</button>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Nội dung CK:</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span id="vietqrContent" style="color:#64748b; font-family:monospace; font-size:12px;">-</span>
+              <button class="btn-action btn-outline" style="padding:2px 6px; font-size:11px;" onclick="copyFieldText('vietqrContent', 'Nội dung chuyển khoản')">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button class="btn-action btn-outline" onclick="closeVietQrModal()">Đóng</button>
+        <button class="btn-action btn-success" id="btnConfirmQrTransfer" onclick="confirmFromQrModal()">✓ Đã chuyển tiền (Duyệt lệnh)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Xác nhận từ chối và tự động hoàn tiền -->
+  <div class="modal-backdrop" id="rejectWithdrawModal">
+    <div class="modal-dialog" style="max-width:480px;">
+      <div class="modal-header">
+        <div class="modal-title">✕ Từ Chối Lệnh Rút Tiền</div>
+        <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div style="background:#fee2e2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:16px; color:#991b1b; font-size:13px; line-height:1.6;">
+          ⚠️ <strong>Lưu ý hoàn tiền:</strong> Khi bạn bấm xác nhận từ chối, hệ thống sẽ <strong>tự động cộng hoàn lại số tiền <span id="rejectModalAmount" style="font-weight:bold;">$0.000</span></strong> vào ví của người dùng <strong id="rejectModalUsername">-</strong>.
+        </div>
+        <div class="form-group">
+          <label style="font-weight:600; margin-bottom:6px; display:block;">Lý do từ chối (Ghi chú lưu vào giao dịch):</label>
+          <textarea id="rejectReasonInput" class="form-control" rows="3" placeholder="Nhập lý do từ chối (VD: Số tài khoản không đúng, Ngân hàng bảo trì,...)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action btn-outline" onclick="closeRejectModal()">Hủy</button>
+        <button class="btn-action btn-danger" onclick="submitRejectWithdrawal()">Xác nhận Từ Chối & Hoàn Tiền</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentTab = 'overview';
     let selectedUserId = null;
     let searchTimeout = null;
-    const tabLoaded = { overview: false, users: false, transactions: false, settings: true };
+    const tabLoaded = { overview: false, users: false, withdrawals: false, transactions: false, settings: true };
 
     function switchTab(tabId) {
       currentTab = tabId;
       document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-      const currentBtn = Array.from(document.querySelectorAll('.nav-item button')).find(b => b.getAttribute('onclick').includes(tabId));
+      const currentBtn = Array.from(document.querySelectorAll('.nav-item button')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
       if (currentBtn) currentBtn.classList.add('active');
 
       const targetContent = document.getElementById(`tab-${tabId}`);
@@ -1010,7 +1173,8 @@
       const titles = {
         overview: 'Tổng Quan Hệ Thống',
         users: 'Quản Lý Người Dùng',
-        transactions: 'Lịch Sử Giao Dịch & Rút Tiền',
+        withdrawals: 'Quản Lý Yêu Cầu Rút Tiền',
+        transactions: 'Lịch Sử Giao Dịch Hệ Thống',
         settings: 'Cấu Hình Hệ Thống'
       };
       document.getElementById('pageTitle').innerText = titles[tabId] || 'Admin Dashboard';
@@ -1019,6 +1183,7 @@
       if (!tabLoaded[tabId]) {
         if (tabId === 'overview') loadOverviewData();
         else if (tabId === 'users') loadUsersData();
+        else if (tabId === 'withdrawals') loadWithdrawalsData(1);
         else if (tabId === 'transactions') loadTransactionsData();
       }
     }
@@ -1288,6 +1453,517 @@
       return 'badge-active';
     }
 
+    // ==========================================
+    // QUẢN LÝ YÊU CẦU RÚT TIỀN (WITHDRAWALS)
+    // ==========================================
+    let currentVietQrRawVND = 0;
+    let currentViewingTxId = null;
+    let currentRejectingTxId = null;
+    let withdrawalsCurrentPage = 1;
+    let withdrawSearchDebounceTimer = null;
+    let soundAlertsEnabled = localStorage.getItem('v2e_sound_alerts') !== 'false';
+    let sseEventSource = null;
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function resolveVietQrBankCode(bankName) {
+      if (!bankName) return 'MB';
+      const s = bankName.toUpperCase();
+      if (s.includes('MB') || s.includes('QUÂN ĐỘI')) return 'MB';
+      if (s.includes('VCB') || s.includes('VIETCOMBANK') || s.includes('NGOẠI THƯƠNG')) return 'VCB';
+      if (s.includes('ICB') || s.includes('VIETINBANK') || s.includes('CÔNG THƯƠNG')) return 'ICB';
+      if (s.includes('BIDV') || s.includes('ĐẦU TƯ')) return 'BIDV';
+      if (s.includes('TCB') || s.includes('TECHCOMBANK') || s.includes('KỸ THƯƠNG')) return 'TCB';
+      if (s.includes('ACB') || s.includes('Á CHÂU')) return 'ACB';
+      if (s.includes('VPB') || s.includes('VPBANK') || s.includes('THỊNH VƯỢNG')) return 'VPB';
+      if (s.includes('TPB') || s.includes('TIENPHONG') || s.includes('TIÊN PHONG')) return 'TPB';
+      if (s.includes('STB') || s.includes('SACOMBANK') || s.includes('SÀI GÒN THƯƠNG TÍN')) return 'STB';
+      if (s.includes('HDB') || s.includes('HDBANK') || s.includes('PHÁT TRIỂN')) return 'HDB';
+      if (s.includes('VIB') || s.includes('QUỐC TẾ')) return 'VIB';
+      if (s.includes('SHB') || s.includes('SÀI GÒN HÀ NỘI')) return 'SHB';
+      if (s.includes('MSB') || s.includes('HÀNG HẢI')) return 'MSB';
+      if (s.includes('OCB') || s.includes('PHƯƠNG ĐÔNG')) return 'OCB';
+      if (s.includes('SEAB') || s.includes('SEABANK')) return 'SEAB';
+      if (s.includes('LPB') || s.includes('LIENVIET') || s.includes('BƯU ĐIỆN')) return 'LPB';
+      if (s.includes('ABB') || s.includes('ABBANK') || s.includes('AN BÌNH')) return 'ABB';
+      if (s.includes('NAB') || s.includes('NAM A') || s.includes('NAM Á')) return 'NAB';
+      if (s.includes('BVB') || s.includes('BAOVIET') || s.includes('BẢO VIỆT')) return 'BVB';
+      if (s.includes('VIETBANK') || s.includes('VIỆT NAM THƯƠNG TÍN')) return 'VBB';
+      if (s.includes('AGRIBANK') || s.includes('NÔNG NGHIỆP')) return 'VBA';
+      const match = bankName.match(/[A-Za-z]{2,6}/);
+      return match ? match[0].toUpperCase() : 'MB';
+    }
+
+    async function loadWithdrawalsData(page = 1) {
+      withdrawalsCurrentPage = page;
+      const status = document.getElementById('withdrawStatusSelect')?.value || 'all';
+      const search = document.getElementById('withdrawSearchInput')?.value?.trim() || '';
+      const tbody = document.getElementById('tableWithdrawalsList');
+      if (!tbody) return;
+
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:#94A3B8;">Đang tải danh sách yêu cầu rút tiền...</td></tr>`;
+
+      try {
+        const res = await fetch(`/api/admin/withdrawals?page=${page}&limit=10&status=${status}&search=${encodeURIComponent(search)}`);
+        const json = await res.json();
+        if (!json.success) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:#EF4444;">Không thể tải dữ liệu: ${json.message || 'Lỗi'}</td></tr>`;
+          return;
+        }
+
+        // Cập nhật thẻ thống kê
+        if (json.data.stats) {
+          const s = json.data.stats;
+          const statPendingEl = document.getElementById('statPendingWithdrawCount');
+          if (statPendingEl) statPendingEl.textContent = s.pendingCount || 0;
+          const statPendingAmtEl = document.getElementById('statPendingWithdrawAmount');
+          if (statPendingAmtEl) {
+            const vnd = Math.round((s.pendingAmount || 0) * 25000);
+            statPendingAmtEl.textContent = `Tổng: $${(s.pendingAmount || 0).toFixed(3)} (~${vnd.toLocaleString('vi-VN')} đ)`;
+          }
+          const statCompEl = document.getElementById('statCompletedWithdrawCount');
+          if (statCompEl) statCompEl.textContent = s.completedCount || 0;
+          const statRejEl = document.getElementById('statRejectedWithdrawCount');
+          if (statRejEl) statRejEl.textContent = s.rejectedCount || 0;
+
+          // Cập nhật số badge trên sidebar
+          updateNavWithdrawBadge(s.pendingCount);
+        }
+
+        const { transactions, pagination } = json.data;
+        if (!transactions || transactions.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#94A3B8;">Không tìm thấy yêu cầu rút tiền nào phù hợp</td></tr>`;
+          renderWithdrawPagination(pagination);
+          return;
+        }
+
+        tbody.innerHTML = transactions.map(tx => {
+          const u = tx.userId || {};
+          const meta = tx.metadata || {};
+          const amountUSD = Number(tx.amount || 0);
+          const amountVND = Math.round(amountUSD * 25000);
+          const isPending = tx.status === 'PENDING';
+          const txDataEscaped = encodeURIComponent(JSON.stringify(tx));
+
+          return `
+            <tr>
+              <td><code title="${tx._id}">#${tx._id.substring(18)}</code></td>
+              <td>
+                <strong>${escapeHtml(u.username || 'N/A')}</strong>
+                <div style="font-size:11px; color:#64748B;">${escapeHtml(u.email || '')}</div>
+              </td>
+              <td>
+                <div style="font-weight:700; color:#EF4444; font-size:14px;">-$${amountUSD.toFixed(3)}</div>
+                <div style="font-size:11px; color:#10B981; font-weight:600;">~${amountVND.toLocaleString('vi-VN')} đ</div>
+              </td>
+              <td>
+                <div style="font-weight:600; color:#1E293B;">${escapeHtml(meta.bankName || 'Ngân hàng')}</div>
+                <div style="font-family:monospace; color:#2563EB; font-weight:600; font-size:13px;">${escapeHtml(meta.accountNumber || 'Chưa cập nhật')}</div>
+              </td>
+              <td>
+                <strong style="color:#0F172A; text-transform:uppercase;">${escapeHtml(meta.accountHolder || 'N/A')}</strong>
+                ${meta.userNote ? `<div style="font-size:11px; color:#64748B; font-style:italic;" title="Ghi chú người dùng: ${escapeHtml(meta.userNote)}">"${escapeHtml(meta.userNote)}"</div>` : ''}
+                ${meta.rejectReason ? `<div style="font-size:11px; color:#EF4444;" title="Lý do từ chối: ${escapeHtml(meta.rejectReason)}">Lý do: ${escapeHtml(meta.rejectReason)}</div>` : ''}
+              </td>
+              <td style="font-size:12px; color:#64748B;">
+                ${new Date(tx.createdAt).toLocaleString('vi-VN')}
+              </td>
+              <td>
+                <span class="badge ${getBadgeStatusClass(tx.status)}">${tx.status === 'PENDING' ? '⏳ Chờ duyệt' : (tx.status === 'COMPLETED' ? '✓ Hoàn tất' : '✕ Từ chối')}</span>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                  <button class="btn-action btn-outline" style="padding:4px 8px; font-size:12px;" onclick="openVietQrModal('${txDataEscaped}')" title="Xem thông tin và quét mã VietQR">
+                    📱 VietQR
+                  </button>
+                  ${isPending ? `
+                    <button class="btn-action btn-success" style="padding:4px 8px; font-size:12px;" onclick="approveWithdrawal('${tx._id}')" title="Duyệt lệnh rút tiền (Đã chuyển khoản)">
+                      ✓ Duyệt
+                    </button>
+                    <button class="btn-action btn-danger" style="padding:4px 8px; font-size:12px;" onclick="openRejectModal('${tx._id}', '${escapeHtml(u.username || 'N/A')}', '${amountUSD.toFixed(3)}')" title="Từ chối lệnh và tự động hoàn tiền vào ví">
+                      ✕ Từ chối
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        renderWithdrawPagination(pagination);
+        tabLoaded.withdrawals = true;
+      } catch (err) {
+        console.error('Error loadWithdrawalsData:', err);
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:#EF4444;">Lỗi kết nối khi tải danh sách rút tiền</td></tr>`;
+      }
+    }
+
+    function renderWithdrawPagination(p) {
+      const el = document.getElementById('withdrawPagination');
+      if (!el || !p) return;
+      el.innerHTML = `
+        <div style="font-size:13px; color:#64748B;">
+          Trang <strong>${p.page}</strong> / <strong>${p.totalPages || 1}</strong> (Tổng cộng <strong>${p.total}</strong> yêu cầu)
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-action btn-outline" ${p.page <= 1 ? 'disabled' : ''} onclick="loadWithdrawalsData(${p.page - 1})">« Trang trước</button>
+          <button class="btn-action btn-outline" ${p.page >= p.totalPages ? 'disabled' : ''} onclick="loadWithdrawalsData(${p.page + 1})">Trang sau »</button>
+        </div>
+      `;
+    }
+
+    function debounceWithdrawSearch() {
+      clearTimeout(withdrawSearchDebounceTimer);
+      withdrawSearchDebounceTimer = setTimeout(() => {
+        loadWithdrawalsData(1);
+      }, 350);
+    }
+
+    function updateNavWithdrawBadge(count) {
+      const badge = document.getElementById('navWithdrawBadge');
+      if (!badge) return;
+      if (count && count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // Modal VietQR
+    function openVietQrModal(txDataEscaped) {
+      try {
+        const tx = JSON.parse(decodeURIComponent(txDataEscaped));
+        currentViewingTxId = tx._id;
+        const meta = tx.metadata || {};
+        const amountUSD = Number(tx.amount || 0);
+        const amountVND = Math.round(amountUSD * 25000);
+        currentVietQrRawVND = amountVND;
+
+        const bankName = meta.bankName || 'MBBank';
+        const accNum = meta.accountNumber || '';
+        const accHolder = meta.accountHolder || (tx.userId ? tx.userId.username : 'KHACH HANG');
+        const content = meta.userNote || `V2E RUT ${tx._id.substring(18)}`;
+
+        const bankCode = resolveVietQrBankCode(bankName);
+        const qrUrl = `https://img.vietqr.io/image/${bankCode}-${accNum}-compact2.png?amount=${amountVND}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(accHolder)}`;
+
+        document.getElementById('vietqrImage').src = qrUrl;
+        document.getElementById('vietqrBankName').textContent = `${bankName} (${bankCode})`;
+        document.getElementById('vietqrAccNum').textContent = accNum || 'Chưa cập nhật';
+        document.getElementById('vietqrAccHolder').textContent = accHolder;
+        document.getElementById('vietqrAmountVND').textContent = `${amountVND.toLocaleString('vi-VN')} đ ($${amountUSD.toFixed(3)})`;
+        document.getElementById('vietqrContent').textContent = content;
+
+        const btnConfirm = document.getElementById('btnConfirmQrTransfer');
+        if (btnConfirm) {
+          if (tx.status === 'PENDING') {
+            btnConfirm.style.display = 'inline-block';
+          } else {
+            btnConfirm.style.display = 'none';
+          }
+        }
+
+        document.getElementById('vietqrModal').classList.add('show');
+      } catch (err) {
+        console.error('Error openVietQrModal:', err);
+      }
+    }
+
+    function closeVietQrModal() {
+      document.getElementById('vietqrModal').classList.remove('show');
+      currentViewingTxId = null;
+    }
+
+    async function confirmFromQrModal() {
+      if (!currentViewingTxId) return;
+      const ok = await approveWithdrawal(currentViewingTxId);
+      if (ok) {
+        closeVietQrModal();
+      }
+    }
+
+    // Modal Từ chối & Hoàn tiền
+    function openRejectModal(txId, username, amountUSD) {
+      currentRejectingTxId = txId;
+      document.getElementById('rejectModalUsername').textContent = username;
+      document.getElementById('rejectModalAmount').textContent = `$${amountUSD}`;
+      document.getElementById('rejectReasonInput').value = '';
+      document.getElementById('rejectWithdrawModal').classList.add('show');
+    }
+
+    function closeRejectModal() {
+      document.getElementById('rejectWithdrawModal').classList.remove('show');
+      currentRejectingTxId = null;
+    }
+
+    async function submitRejectWithdrawal() {
+      if (!currentRejectingTxId) return;
+      const reason = document.getElementById('rejectReasonInput').value.trim();
+
+      try {
+        const res = await fetch(`/api/admin/transactions/${currentRejectingTxId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'REJECTED',
+            rejectReason: reason || 'Admin từ chối yêu cầu rút tiền'
+          })
+        });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          closeRejectModal();
+          loadWithdrawalsData(withdrawalsCurrentPage);
+          loadOverviewData();
+        }
+      } catch (err) {
+        alert('Lỗi khi từ chối yêu cầu: ' + err.message);
+      }
+    }
+
+    async function approveWithdrawal(txId) {
+      if (!confirm('Xác nhận bạn đã chuyển khoản thành công và muốn DUYỆT yêu cầu rút tiền này?')) return false;
+
+      try {
+        const res = await fetch(`/api/admin/transactions/${txId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'COMPLETED' })
+        });
+        const json = await res.json();
+        alert(json.message);
+        if (json.success) {
+          loadWithdrawalsData(withdrawalsCurrentPage);
+          loadOverviewData();
+          return true;
+        }
+      } catch (err) {
+        alert('Lỗi duyệt lệnh rút: ' + err.message);
+      }
+      return false;
+    }
+
+    // Tiện ích Sao Chép & Mini Toast
+    function copyFieldText(elementId, label) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      copyRawText(el.textContent.trim(), label);
+    }
+
+    function copyRawText(text, label) {
+      if (!text) return;
+      navigator.clipboard.writeText(String(text)).then(() => {
+        showMiniToast(`Đã sao chép ${label || ''}: ${text}`);
+      }).catch(() => {
+        const temp = document.createElement('textarea');
+        temp.value = String(text);
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showMiniToast(`Đã sao chép: ${text}`);
+      });
+    }
+
+    function showMiniToast(msg) {
+      let toast = document.getElementById('adminMiniToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'adminMiniToast';
+        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#1E293B; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; z-index:99999; box-shadow:0 8px 24px rgba(0,0,0,0.2); transition:opacity 0.3s; opacity:0; pointer-events:none;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 2200);
+    }
+
+    // Âm thanh thông báo Web Audio API (không cần file âm thanh ngoài)
+    function toggleSoundAlert() {
+      soundAlertsEnabled = !soundAlertsEnabled;
+      localStorage.setItem('v2e_sound_alerts', soundAlertsEnabled ? 'true' : 'false');
+      updateSoundButtonUI();
+      if (soundAlertsEnabled) {
+        playNotificationChime();
+        showMiniToast('🔔 Âm thanh thông báo: ĐÃ BẬT');
+      } else {
+        showMiniToast('🔕 Âm thanh thông báo: ĐÃ TẮT');
+      }
+    }
+
+    function updateSoundButtonUI() {
+      const btn = document.getElementById('btnSoundToggle');
+      if (!btn) return;
+      if (soundAlertsEnabled) {
+        btn.innerHTML = '🔔 Chuông: Bật';
+        btn.classList.add('btn-primary');
+        btn.classList.remove('btn-outline');
+      } else {
+        btn.innerHTML = '🔕 Chuông: Tắt';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline');
+      }
+    }
+
+    function playNotificationChime() {
+      if (!soundAlertsEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+
+        // Âm 1: 587.33 Hz (nốt D5)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now);
+        gain1.gain.setValueAtTime(0.18, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.22);
+
+        // Âm 2: 880.00 Hz (nốt A5)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880.00, now + 0.14);
+        gain2.gain.setValueAtTime(0.24, now + 0.14);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.14);
+        osc2.stop(now + 0.55);
+      } catch (err) {
+        console.warn('AudioContext không khả dụng:', err);
+      }
+    }
+
+    // Realtime SSE Stream & Push Toast
+    function initNotificationStream() {
+      if (sseEventSource) {
+        sseEventSource.close();
+      }
+
+      const badge = document.getElementById('sseStatusBadge');
+      if (badge) {
+        badge.textContent = '🟡 Đang kết nối...';
+        badge.style.color = '#D97706';
+      }
+
+      try {
+        sseEventSource = new EventSource('/api/admin/notifications/stream');
+
+        sseEventSource.onopen = () => {
+          if (badge) {
+            badge.textContent = '🟢 Realtime';
+            badge.style.color = '#059669';
+          }
+        };
+
+        sseEventSource.addEventListener('new_withdrawal', (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            handleIncomingWithdrawal(data);
+          } catch (err) {
+            console.error('Lỗi phân tích new_withdrawal:', err);
+          }
+        });
+
+        sseEventSource.onerror = () => {
+          if (badge) {
+            badge.textContent = '🟠 Tự kết nối lại...';
+            badge.style.color = '#EA580C';
+          }
+        };
+      } catch (e) {
+        console.error('Không thể khởi tạo EventSource:', e);
+      }
+    }
+
+    function handleIncomingWithdrawal(tx) {
+      playNotificationChime();
+      showWithdrawPushToast(tx);
+
+      if (currentTab === 'withdrawals') {
+        loadWithdrawalsData(withdrawalsCurrentPage);
+      }
+      syncPendingWithdrawalsCount();
+    }
+
+    function showWithdrawPushToast(tx) {
+      const container = getOrCreateToastContainer();
+      const toast = document.createElement('div');
+      toast.className = 'push-toast-alert';
+      toast.style.cssText = 'background:#1E293B; color:#FFFFFF; border-left:4px solid #F59E0B; border-radius:10px; padding:14px 16px; margin-bottom:10px; box-shadow:0 10px 25px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:space-between; gap:12px; animation:slideInRight 0.35s ease-out; min-width:320px; max-width:400px;';
+
+      const amountUSD = Number(tx.amount || 0).toFixed(3);
+      const amountVND = Math.round((tx.amount || 0) * 25000).toLocaleString('vi-VN');
+      const u = tx.userId || {};
+      const meta = tx.metadata || {};
+
+      toast.innerHTML = `
+        <div style="font-size:24px;">💸</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; color:#F59E0B; font-size:14px;">Yêu Cầu Rút Tiền Mới!</div>
+          <div style="font-size:13px; color:#F8FAFC; margin-top:2px;">
+            <strong>${escapeHtml(u.username || 'Người dùng')}</strong> vừa yêu cầu rút <strong>$${amountUSD}</strong> (~${amountVND} đ)
+          </div>
+          <div style="font-size:11px; color:#94A3B8; margin-top:3px;">
+            ${escapeHtml(meta.bankName || 'Ngân hàng')}: <code>${escapeHtml(meta.accountNumber || '')}</code>
+          </div>
+        </div>
+        <button style="background:#F59E0B; border:none; color:#1E293B; font-weight:700; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;" onclick="switchTab('withdrawals'); this.parentElement.remove();">
+          Xem ngay
+        </button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.5s, transform 0.5s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(50px)';
+        setTimeout(() => toast.remove(), 500);
+      }, 8000);
+    }
+
+    function getOrCreateToastContainer() {
+      let c = document.getElementById('pushToastContainer');
+      if (!c) {
+        c = document.createElement('div');
+        c.id = 'pushToastContainer';
+        c.style.cssText = 'position:fixed; top:20px; right:20px; z-index:999999; display:flex; flex-direction:column; align-items:flex-end;';
+        document.body.appendChild(c);
+      }
+      return c;
+    }
+
+    async function syncPendingWithdrawalsCount() {
+      try {
+        const res = await fetch('/api/admin/withdrawals?limit=1&status=PENDING');
+        const json = await res.json();
+        if (json.success && json.data && json.data.stats) {
+          updateNavWithdrawBadge(json.data.stats.pendingCount);
+          const statPendingEl = document.getElementById('statPendingWithdrawCount');
+          if (statPendingEl) statPendingEl.textContent = json.data.stats.pendingCount || 0;
+        }
+      } catch (err) {
+        // Silent catch
+      }
+    }
+
     // Login Handler
     function handleLogin(e) {
       e.preventDefault();
@@ -1305,6 +1981,10 @@
     // Lazy init: load tab overview (tab mặc định) sau khi đăng nhập
     function initDashboard() {
       loadOverviewData();
+      updateSoundButtonUI();
+      initNotificationStream();
+      syncPendingWithdrawalsCount();
+      setInterval(syncPendingWithdrawalsCount, 20000);
     }
 
     // Check session on load

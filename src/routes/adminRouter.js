@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import RewardTransaction from '../models/RewardTransaction.js';
 import Referral from '../models/Referral.js';
 import AdSession from '../models/AdSession.js';
+import { notificationService } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -287,11 +288,119 @@ router.get('/transactions', async (req, res, next) => {
   }
 });
 
-// PUT /api/admin/transactions/:id/status - Duyệt hoặc Từ chối yêu cầu giao dịch/rút tiền
+// GET /api/admin/withdrawals - Danh sách chuyên biệt các yêu cầu rút tiền
+router.get('/withdrawals', async (req, res, next) => {
+  try {
+    const { status, q, page = 1, limit = 20 } = req.query;
+
+    const filter = { type: 'WITHDRAWAL' };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    if (q) {
+      const regex = new RegExp(q.trim(), 'i');
+      const matchedUsers = await User.find({
+        $or: [{ username: regex }, { email: regex }],
+      }).select('_id');
+      const userIds = matchedUsers.map((u) => u._id);
+
+      filter.$or = [
+        { userId: { $in: userIds } },
+        { 'metadata.bankName': regex },
+        { 'metadata.accountNumber': regex },
+        { 'metadata.accountHolder': regex },
+      ];
+    }
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
+    const skip = (pageNum - 1) * limitNum;
+
+    const total = await RewardTransaction.countDocuments(filter);
+    const withdrawals = await RewardTransaction.find(filter)
+      .populate('userId', 'username email avatar balance')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    // Thống kê nhanh số lượng
+    const pendingCount = await RewardTransaction.countDocuments({ type: 'WITHDRAWAL', status: 'PENDING' });
+    const completedCount = await RewardTransaction.countDocuments({ type: 'WITHDRAWAL', status: 'COMPLETED' });
+    const rejectedCount = await RewardTransaction.countDocuments({ type: 'WITHDRAWAL', status: 'REJECTED' });
+
+    const pendingSumAgg = await RewardTransaction.aggregate([
+      { $match: { type: 'WITHDRAWAL', status: 'PENDING' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    const pendingAmount = (pendingSumAgg[0] && pendingSumAgg[0].total) || 0;
+
+    res.json({
+      success: true,
+      data: {
+        withdrawals,
+        stats: {
+          pendingCount,
+          completedCount,
+          rejectedCount,
+          pendingAmount,
+        },
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum) || 1,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/admin/notifications/stream - Server-Sent Events (SSE) đẩy thông báo rút tiền tức thì
+router.get('/notifications/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
+
+  // Gửi thông báo kết nối thành công
+  res.write(`data: ${JSON.stringify({ type: 'connected', time: new Date().toISOString() })}\n\n`);
+
+  const onNewWithdrawal = (data) => {
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'new_withdrawal', data })}\n\n`);
+    } catch (e) {
+      // client disconnected
+    }
+  };
+
+  notificationService.on('new_withdrawal', onNewWithdrawal);
+
+  // Ping giữ kết nối mỗi 20s
+  const keepAliveInterval = setInterval(() => {
+    try {
+      res.write(': keepalive\n\n');
+    } catch (e) {
+      clearInterval(keepAliveInterval);
+    }
+  }, 20000);
+
+  req.on('close', () => {
+    notificationService.removeListener('new_withdrawal', onNewWithdrawal);
+    clearInterval(keepAliveInterval);
+  });
+});
+
+// PUT /api/admin/transactions/:id/status - Duyệt hoặc Từ chối yêu cầu giao dịch/rút tiền (Tự động hoàn tiền khi từ chối)
 router.put('/transactions/:id/status', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, reason } = req.body;
 
     if (!['COMPLETED', 'REJECTED', 'FAILED'].includes(status)) {
       return res.status(400).json({
@@ -308,12 +417,29 @@ router.put('/transactions/:id/status', async (req, res, next) => {
       });
     }
 
+    const previousStatus = transaction.status;
+
+    // Nếu từ chối lệnh rút tiền đang ở trạng thái PENDING -> Hoàn lại tiền vào ví user
+    if (status === 'REJECTED' && transaction.type === 'WITHDRAWAL' && previousStatus === 'PENDING') {
+      const user = await User.findById(transaction.userId);
+      if (user) {
+        user.balance += transaction.amount;
+        await user.save();
+      }
+      if (!transaction.metadata) transaction.metadata = {};
+      transaction.metadata.rejectReason = reason || 'Admin từ chối yêu cầu';
+    }
+
     transaction.status = status;
     await transaction.save();
 
     res.json({
       success: true,
-      message: `Cập nhật trạng thái giao dịch thành ${status}`,
+      message: status === 'COMPLETED'
+        ? 'Đã duyệt yêu cầu rút tiền thành công'
+        : status === 'REJECTED'
+        ? 'Đã từ chối và hoàn lại số dư cho người dùng'
+        : `Cập nhật trạng thái thành ${status}`,
       data: transaction,
     });
   } catch (error) {
